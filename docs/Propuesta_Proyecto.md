@@ -126,11 +126,3 @@ Cumplen el requisito obligatorio de tener al menos un componente alojado en la n
 ## 6. Repositorio GitHub
 
 **Link:** https://github.com/NazarenoAranda/tfi-comedores-universitarios.git
-
-Estructura sugerida:
-```
-/backend      → Django + DRF
-/frontend     → React + Vite
-/docs         → documentación, esquemas, informes
-README.md     → descripción, integrantes, instalación
-```
