@@ -100,11 +100,11 @@ Cumplen el requisito obligatorio de tener al menos un componente alojado en la n
 | 3 | Desarrollo completo, despliegue, informe, video | 14/11 |
 
 ### Módulos identificados (a detallar en la Entrega 2)
-- Módulo de Ventas / Comprobantes
-- Módulo de Caja (apertura/cierre)
-- Módulo de Proveedores y Pedidos
-- Módulo de Sedes
-- Módulo de Usuarios y Autenticación
+- Módulo de Ventas / Comprobantes [Tiempo de desarrollo estimado: 12 dias]
+- Módulo de Caja (apertura/cierre) [Tiempo de desarrollo estimado: 21 dias]
+- Módulo de Proveedores y Pedidos [Tiempo de desarrollo estimado:18 dias]
+- Módulo de Sedes [Tiempo de desarrollo estimado: 14 dias]
+- Módulo de Usuarios y Autenticación [Tiempo de desarrollo estimado: 7 dias]
 
 ### Riesgos iniciales y mitigación
 | Riesgo | Mitigación |
