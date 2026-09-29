@@ -28,7 +28,7 @@ El costo principal identificado es el **tiempo que se pierde armando el cierre d
 ### Por qué una solución tecnológica
 Una planilla de Excel, aunque esté bien diseñada, depende de la disciplina manual de cada encargado de caja en cada sede y no ofrece una vista centralizada en tiempo real. Un sistema con una interfaz intuitiva reduce la fricción del registro diario y permite consolidar automáticamente la información de todas las sedes, algo que el enfoque actual no resuelve.
 
-### Enunciado del problema (formato validado)
+### Enunciado del problema
 > *"El personal de una cadena de comedores universitarios —encargados de caja en cada sede, encargado de compras y la administración central— actualmente registra las ventas diarias y los pedidos a proveedores mediante Excel y anotaciones en papel, sin un criterio centralizado entre sedes. Esto genera una pérdida significativa de tiempo al armar el cierre de caja, especialmente al no poder consolidar rápidamente la información de las distintas sedes. Un sistema de gestión centralizaría el registro de comprobantes de venta y el seguimiento de pedidos a proveedores en una interfaz intuitiva, reduciendo el tiempo de cierre de caja y dando visibilidad consolidada a la administración."*
 
 ### Validación del problema
@@ -54,7 +54,7 @@ Una planilla de Excel, aunque esté bien diseñada, depende de la disciplina man
 - Reportes comparativos entre sedes
 - Alertas de pedidos a proveedores con demora
 - Exportación del cierre de caja a PDF/Excel
-- Roles de usuario diferenciados (administración / cajero / compras) con permisos
+- Permisos diferenciados por rol (administración / cajero / compras)
 
 ### Fuera de alcance (explícito)
 - Facturación electrónica / integración con AFIP
@@ -68,26 +68,30 @@ Una planilla de Excel, aunque esté bien diseñada, depende de la disciplina man
 | Capa | Tecnología |
 |---|---|
 | Backend | Python + Django + Django REST Framework |
+| Autenticación | Token Authentication de Django REST Framework |
 | Base de datos | PostgreSQL |
 | Frontend | React + Vite |
-| Despliegue | Backend en Render, base de datos en Render/Supabase, frontend en Vercel |
+| Despliegue | Backend en Render, base de datos PostgreSQL en Supabase, frontend en Vercel |
 | Control de versiones | GitHub (repositorio único) |
 
 ### Justificación
 
 **Backend — Python + Django + DRF:**
-Se eligió Python porque es el lenguaje con el que el equipo se siente más cómodo trabajando para esta etapa del proyecto. Dentro del ecosistema Python, Django aporta un ORM maduro, sistema de autenticación y un panel de administración incorporado (Django Admin), lo que permite tener una base funcional para gestionar proveedores, pedidos y comprobantes desde el día uno, sin necesidad de construir primero toda la interfaz. Esto reduce el esfuerzo de desarrollo, algo clave dado el plazo académico. Django REST Framework se usa para exponer la API que consume el frontend en React.
+Se eligió Python porque es un lenguaje que el equipo ya conoce de la cursada (Programación IV, POO en Python) y con el que se siente cómodo. Dentro del ecosistema Python, Django aporta un ORM maduro, sistema de autenticación y un panel de administración incorporado (Django Admin), lo que permite tener una base funcional para gestionar proveedores, pedidos y comprobantes desde el día uno, sin necesidad de construir primero toda la interfaz. Esto reduce el esfuerzo de desarrollo, algo clave dado el plazo académico. Django REST Framework se usa para exponer la API que consume el frontend en React.
+
+**Autenticación — Token Authentication de DRF:**
+Frontend y backend se despliegan en servicios distintos (Vercel y Render), por lo que las sesiones basadas en cookies traerían complicaciones entre dominios. El token viaja en el header `Authorization`, viene incluido en DRF sin librerías adicionales y evita la complejidad extra de JWT (refresh tokens, expiración), que no aporta valor real para el alcance de este proyecto.
 
 **Base de datos — PostgreSQL:**
-El dominio del problema (ventas, comprobantes, sedes, proveedores, pedidos) tiene una estructura de datos bien definida y con relaciones claras entre entidades (una venta pertenece a una sede, un pedido pertenece a un proveedor, etc.), por lo que un modelo relacional con integridad referencial es el más adecuado frente a una base NoSQL.
+El dominio del problema (ventas, comprobantes, sedes, proveedores, pedidos) tiene una estructura de datos bien definida y con relaciones claras entre entidades (una venta pertenece a una sede, un pedido pertenece a un proveedor, etc.), por lo que un modelo relacional con integridad referencial es el más adecuado frente a una base NoSQL. Se aloja en Supabase porque las bases PostgreSQL gratuitas de Render expiran a los 30 días de creadas, un plazo menor al de este proyecto.
 
 **Frontend — React + Vite:**
 JavaScript es el lenguaje nativo de los navegadores, y React permite construir una interfaz de carga rápida e intuitiva para los encargados de caja, que es justamente uno de los objetivos centrales del proyecto (reducir la fricción frente al Excel actual).
 
-**Despliegue — Render / Vercel:**
+**Despliegue — Render / Supabase / Vercel:**
 Cumplen el requisito obligatorio de tener al menos un componente alojado en la nube, con planes gratuitos suficientes para el alcance de un MVP académico.
 
-**Experiencia previa del equipo:** el backend en Python es una tecnología nueva para el equipo en el contexto de esta cursada (que venía trabajando con Java/Spring Boot), pero se trata de un proyecto académico con condiciones flexibles y el objetivo incluye aprender — una de las condiciones que la propia guía de la materia identifica como válida para explorar una tecnología no dominada previamente.
+**Experiencia previa del equipo:** el equipo ya conoce Python (Programación IV) y la arquitectura en capas con Java/Spring Boot (Programación III), que se traslada de forma directa a Django. Lo nuevo a incorporar es el framework Django/DRF. Al ser un proyecto académico con condiciones flexibles y con el aprendizaje como parte del objetivo, esa curva de aprendizaje es asumible dentro de los plazos.
 
 ---
 
@@ -96,22 +100,19 @@ Cumplen el requisito obligatorio de tener al menos un componente alojado en la n
 | Etapa | Entregable | Fecha límite |
 |---|---|---|
 | 1 | Problemática definida, alcance, stack justificado, repo GitHub creado | 30/08 |
-| 2 | Esquema de base de datos + listado de módulos | 27/09 |
+| 2 | Esquema de base de datos, listado de módulos, arquitectura y estructura del repositorio | 27/09 |
 | 3 | Desarrollo completo, despliegue, informe, video | 14/11 |
 
-### Módulos identificados (a detallar en la Entrega 2)
-- Módulo de Ventas / Comprobantes [Tiempo de desarrollo estimado: 12 dias]
-- Módulo de Caja (apertura/cierre) [Tiempo de desarrollo estimado: 21 dias]
-- Módulo de Proveedores y Pedidos [Tiempo de desarrollo estimado:18 dias]
-- Módulo de Sedes [Tiempo de desarrollo estimado: 14 dias]
-- Módulo de Usuarios y Autenticación [Tiempo de desarrollo estimado: 7 dias]
+### Módulos identificados
+Detalle, descripción y prioridad de cada uno en [`02-Diseno-BD-Modulos.md`](./02-Diseno-BD-Modulos.md).
 
 ### Riesgos iniciales y mitigación
 | Riesgo | Mitigación |
 |---|---|
-| Equipo sin experiencia previa en Django | Dedicar la primera semana post-entrega 1 a un mini-tutorial guiado antes de tocar el modelo de datos definitivo |
+| Equipo sin experiencia previa en Django | Dedicar la primera semana de desarrollo a un mini-tutorial guiado antes de tocar el modelo de datos definitivo |
 | Alcance multi-sede puede crecer de más | Mantener fija la lista de "fuera de alcance" y revisarla en cada entrega |
-| Plazos ajustados para dos entregas intermedias | Priorizar siempre el MVP sobre el "nice to have" |
+| Plazos ajustados para las entregas intermedias | Priorizar siempre el MVP sobre el "nice to have" |
+| Los servicios gratuitos en la nube se "duermen" tras un rato sin uso (el primer pedido puede tardar hasta un minuto) | Aceptarlo para el MVP y avisarlo en la demo; revisar las condiciones de los planes gratuitos antes de desplegar |
 
 ---
 
@@ -123,6 +124,12 @@ Cumplen el requisito obligatorio de tener al menos un componente alojado en la n
 
 ---
 
-## 6. Repositorio GitHub
+## 6. Estructura del repositorio
 
-**Link:** https://github.com/NazarenoAranda/tfi-comedores-universitarios.git
+```
+/backend      → Django + DRF (solo estructura inicial por ahora)
+/frontend     → React + Vite (solo estructura inicial por ahora)
+/database     → scripts DDL/DML y esquemas
+/docs         → propuesta, diseño de BD, módulos y arquitectura
+README.md     → descripción, tecnologías, integrantes y estado del proyecto
+```
