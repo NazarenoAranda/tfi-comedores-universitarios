@@ -137,7 +137,7 @@ Detalle, descripción y prioridad de cada uno en [`02-Diseno-BD-Modulos.md`](doc
 README.md     Este archivo
 ```
 
-Por ahora `/backend` y `/frontend` contienen solo su `README.md`: el código se comienza a desarrollar una vez aprobada la etapa de diseño.
+El código se desarrolla dentro de `/backend` y `/frontend` durante la Etapa 3 (ver el estado en la sección 8).
 
 ## 7. Documentación
 
@@ -154,11 +154,11 @@ Por ahora `/backend` y `/frontend` contienen solo su `README.md`: el código se 
 |---|---|
 | 1. Propuesta y repositorio | Entregada |
 | 2. Diseño de base de datos, módulos y arquitectura | Documentación subida, pendiente de aprobación del tutor |
-| 3. Desarrollo, despliegue, informe y video | Pendiente (fecha límite 14/11) |
+| 3. Desarrollo, despliegue, informe y video | **En curso** (fecha límite 14/11) |
 
 ## 9. Instalación y ejecución
 
-Pendiente: el desarrollo comienza una vez aprobada la etapa de diseño. Esta sección se completará con los pasos para levantar la base de datos, el backend y el frontend.
+En construcción. Mientras tanto, el backend y el frontend tienen sus propias instrucciones en `backend/README.md` y `frontend/README.md`. Esta sección se completará con los pasos completos en la entrega final.
 
 ## Integrantes
 
