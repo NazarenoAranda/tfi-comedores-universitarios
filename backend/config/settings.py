@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     "corsheaders",
     # Módulos del sistema
     "usuarios",
+    "sedes",
 ]
 
 MIDDLEWARE = [

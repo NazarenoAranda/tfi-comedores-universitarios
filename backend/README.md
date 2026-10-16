@@ -10,6 +10,7 @@ Estructura prevista: una app de Django por módulo (`usuarios`, `sedes`, `provee
 |---|---|
 | Configuración base (Django, DRF, token, CORS, base de datos por variable de entorno) | Listo |
 | `usuarios` — modelo de usuario con email y rol | Base lista (login y API en desarrollo) |
+| `sedes` — ABM de comedores | Listo |
 | Resto de los módulos | Pendiente |
 
 ## Requisitos
@@ -57,6 +58,21 @@ Una vez levantado el servidor:
 |---|---|
 | http://localhost:8000/api/health/ | Chequeo de estado de la API y de la base de datos (público) |
 | http://localhost:8000/admin/ | Panel de administración de Django |
+
+## API disponible
+
+Todos los endpoints (salvo `health`) requieren el header `Authorization: Token <token>`.
+
+| Método y dirección | Qué hace |
+|---|---|
+| `GET /api/health/` | Estado de la API y de la base (público) |
+| `GET /api/sedes/` | Listado de sedes. Filtros: `?activa=true` o `?activa=false`, `?search=texto` |
+| `POST /api/sedes/` | Alta de una sede |
+| `GET /api/sedes/<id>/` | Detalle de una sede |
+| `PUT` / `PATCH /api/sedes/<id>/` | Modificación de una sede |
+| `DELETE /api/sedes/<id>/` | Baja lógica: la sede queda inactiva y no se borra, para conservar el historial |
+
+Los listados están paginados de a 20 elementos (`count`, `next`, `previous`, `results`).
 
 ## Configuración por variables de entorno
 
