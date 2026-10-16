@@ -1,0 +1,9 @@
+# Backend — Sistema de gestión de caja y proveedores
+Django>=5.2,<5.3
+djangorestframework>=3.16,<4
+django-cors-headers>=4.4,<5
+python-dotenv>=1.0,<2
+dj-database-url>=2.2,<4
+psycopg2-binary>=2.9,<3
+whitenoise>=6.7,<7
+gunicorn>=22,<24
