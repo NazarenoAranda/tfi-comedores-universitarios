@@ -43,3 +43,12 @@ class EsAdminOCompras(BasePermission):
 
     def has_permission(self, request, view):
         return _rol(request) in ("admin", "compras")
+
+
+class EsAdminOCajero(BasePermission):
+    """Administración y cajeros. El encargado de compras no accede."""
+
+    message = "Solo la administración y los cajeros pueden acceder a la caja."
+
+    def has_permission(self, request, view):
+        return _rol(request) in ("admin", "cajero")
