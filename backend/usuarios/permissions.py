@@ -34,3 +34,12 @@ class EsAdminOSoloLectura(BasePermission):
         if request.method in SAFE_METHODS:
             return True
         return rol == "admin"
+
+
+class EsAdminOCompras(BasePermission):
+    """Administración y encargado de compras (consultan y modifican). El cajero no accede."""
+
+    message = "Solo la administración y el encargado de compras pueden acceder a estos datos."
+
+    def has_permission(self, request, view):
+        return _rol(request) in ("admin", "compras")

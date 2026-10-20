@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     # Módulos del sistema
     "usuarios",
     "sedes",
+    "proveedores",
 ]
 
 MIDDLEWARE = [
