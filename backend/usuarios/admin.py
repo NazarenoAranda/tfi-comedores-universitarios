@@ -8,7 +8,7 @@ from .models import Usuario
 class UsuarioCreationForm(UserCreationForm):
     class Meta:
         model = Usuario
-        fields = ("email", "nombre", "rol")
+        fields = ("email", "nombre", "rol", "sede")
 
 
 class UsuarioChangeForm(UserChangeForm):
@@ -23,13 +23,14 @@ class UsuarioAdmin(UserAdmin):
     add_form = UsuarioCreationForm
 
     ordering = ("nombre",)
-    list_display = ("nombre", "email", "rol", "is_active")
-    list_filter = ("rol", "is_active")
+    list_display = ("nombre", "email", "rol", "sede", "is_active")
+    list_filter = ("rol", "sede", "is_active")
     search_fields = ("nombre", "email")
+    list_select_related = ("sede",)
 
     fieldsets = (
         (None, {"fields": ("email", "password")}),
-        ("Datos personales", {"fields": ("nombre", "rol")}),
+        ("Datos personales", {"fields": ("nombre", "rol", "sede")}),
         (
             "Permisos",
             {"fields": ("is_active", "is_staff", "is_superuser", "groups", "user_permissions")},
@@ -41,7 +42,7 @@ class UsuarioAdmin(UserAdmin):
             None,
             {
                 "classes": ("wide",),
-                "fields": ("email", "nombre", "rol", "password1", "password2"),
+                "fields": ("email", "nombre", "rol", "sede", "password1", "password2"),
             },
         ),
     )

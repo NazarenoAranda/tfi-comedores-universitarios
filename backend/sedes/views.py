@@ -1,13 +1,16 @@
 from rest_framework import filters, status, viewsets
 from rest_framework.response import Response
 
+from usuarios.permissions import EsAdminOSoloLectura
+
 from .models import Sede
 from .serializers import SedeSerializer
 
 
 class SedeViewSet(viewsets.ModelViewSet):
     """
-    ABM de sedes.
+    ABM de sedes. Cualquier usuario autenticado puede consultarlas; solo la administración
+    puede darlas de alta, modificarlas o darlas de baja.
 
     - GET    /api/sedes/          listado (filtros: ?activa=true|false, ?search=texto)
     - POST   /api/sedes/          alta
@@ -17,6 +20,7 @@ class SedeViewSet(viewsets.ModelViewSet):
     """
 
     serializer_class = SedeSerializer
+    permission_classes = [EsAdminOSoloLectura]
     filter_backends = [filters.SearchFilter]
     search_fields = ["nombre", "universidad", "direccion"]
 

@@ -1,10 +1,15 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 
 
 class UsuarioManager(BaseUserManager):
     use_in_migrations = True
+
+    def get_by_natural_key(self, email):
+        # El login no distingue mayúsculas de minúsculas en el email.
+        return self.get(email__iexact=email)
 
     def _crear(self, email, password, **extra):
         if not email:
@@ -37,6 +42,15 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     nombre = models.CharField(max_length=150)
     email = models.EmailField(max_length=150, unique=True)
     rol = models.CharField(max_length=20, choices=Rol.choices, default=Rol.CAJERO)
+    # Sede a la que pertenece. Es obligatoria para los cajeros; la administración
+    # y compras pueden no tener sede fija.
+    sede = models.ForeignKey(
+        "sedes.Sede",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="usuarios",
+    )
     is_active = models.BooleanField("activo", default=True)
     is_staff = models.BooleanField(
         "acceso al panel de administración", default=False
@@ -56,3 +70,13 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f"{self.nombre} ({self.email})"
+
+    def clean(self):
+        super().clean()
+        self.email = (self.email or "").strip().lower()
+        if self.rol == self.Rol.CAJERO and not self.sede_id:
+            raise ValidationError({"sede": "Un cajero debe tener una sede asignada."})
+
+    def save(self, *args, **kwargs):
+        self.email = (self.email or "").strip().lower()
+        super().save(*args, **kwargs)
