@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     "sedes",
     "proveedores",
     "caja",
+    "ventas",
 ]
 
 MIDDLEWARE = [
