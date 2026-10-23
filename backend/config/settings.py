@@ -50,9 +50,22 @@ if not SECRET_KEY:
 ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", "localhost,127.0.0.1")
 CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS")
 
+# Render define RENDER_EXTERNAL_HOSTNAME con el dominio público del servicio
+# (por ejemplo "tfi-comedores-api.onrender.com"): se autoriza solo, sin configurarlo a mano.
+RENDER_EXTERNAL_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME", "").strip()
+if RENDER_EXTERNAL_HOSTNAME:
+    if RENDER_EXTERNAL_HOSTNAME not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+    origen = f"https://{RENDER_EXTERNAL_HOSTNAME}"
+    if origen not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(origen)
+
 if not DEBUG:
     # Detrás del proxy de Render la conexión llega por https.
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    # Las cookies de sesión y CSRF (panel de administración) viajan solo por https.
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
 
 # --------------------------------------------------------------------------
 # Aplicaciones

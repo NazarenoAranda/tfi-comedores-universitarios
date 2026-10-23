@@ -8,7 +8,7 @@ La consigna de la cátedra exige que al menos un componente principal esté func
 | Componente | Servicio | Estado de esta guía |
 |---|---|---|
 | Base de datos (PostgreSQL) | Supabase | **Documentada en este archivo** |
-| Backend (Django + DRF) | Render | Pendiente (se documenta al desplegarlo) |
+| Backend (Django + DRF) | Render | **Documentada en este archivo** |
 | Frontend (React + Vite) | Vercel | Pendiente (se documenta al desplegarlo) |
 
 ```mermaid
@@ -128,7 +128,96 @@ Con la Data API desactivada, ningún endpoint REST de Supabase responde, y Djang
 
 ## 2. Backend en Render
 
-*Pendiente. Se documenta al desplegarlo (24/10).*
+### 2.1 Qué se despliega
+
+Se despliega la carpeta `backend/` del repositorio como un **Web Service** de Render, conectado al repositorio de GitHub: cada vez que se sube un cambio a `main` dentro de `backend/`, Render vuelve a construir y a publicar el servicio automáticamente. El backend se conecta a la base de Supabase (sección 1) con la variable `DATABASE_URL`.
+
+Archivos del repositorio que lo hacen posible:
+
+| Archivo | Para qué sirve |
+|---|---|
+| `backend/build.sh` | Script de construcción: instala las dependencias, junta los archivos estáticos del panel de administración y aplica las migraciones en Supabase. |
+| `backend/requirements.txt` | Dependencias (incluye `gunicorn`, el servidor de producción, y `whitenoise`, que sirve los estáticos). |
+| `backend/config/settings.py` | Lee todo de variables de entorno y, en Render, autoriza solo el dominio del servicio (`RENDER_EXTERNAL_HOSTNAME`). Con `DEBUG=False` las cookies viajan solo por https. |
+| `.gitattributes` (raíz) | Obliga a que `build.sh` tenga fin de línea LF, que es lo que entiende Render. |
+
+### 2.2 Crear el servicio
+
+1. Crear una cuenta en [render.com](https://render.com) (se puede ingresar con GitHub) y autorizar el acceso al repositorio `tfi-comedores-universitarios`.
+2. **New → Web Service** y elegir el repositorio.
+3. Completar:
+
+| Campo | Valor |
+|---|---|
+| **Name** | `tfi-comedores-api` (define la dirección pública: `https://tfi-comedores-api.onrender.com`; si el nombre está tomado, Render agrega un sufijo) |
+| **Language** | Python 3 |
+| **Branch** | `main` |
+| **Region** | La más cercana a la base de datos entre las disponibles (por ejemplo, Virginia o Ohio) |
+| **Root Directory** | `backend` |
+| **Build Command** | `bash build.sh` |
+| **Start Command** | `gunicorn config.wsgi:application --workers 2 --timeout 60` |
+| **Instance Type** | Free |
+
+   (Se usa `bash build.sh` y no `./build.sh` porque los archivos subidos desde la web de GitHub pierden el permiso de ejecución.)
+
+4. En **Advanced → Health Check Path** escribir `/api/health/`. Render consulta esa dirección para saber si el servicio arrancó; el backend responde `{"status":"ok","database":"ok"}` cuando también anda la base.
+
+### 2.3 Variables de entorno
+
+En la misma pantalla (o después, en **Environment**), agregar:
+
+| Variable | Valor | Notas |
+|---|---|---|
+| `PYTHON_VERSION` | `3.13.5` | Versión completa, con el número final. Sin esto Render usa su versión por defecto, más nueva que la que se probó. |
+| `DEBUG` | `False` | Siempre falso en producción. |
+| `SECRET_KEY` | una clave larga y aleatoria | Generar una **distinta** a la de desarrollo con `python -c "from django.core.management.utils import get_random_secret_key as g; print(g())"`. |
+| `DATABASE_URL` | la URI del *Session pooler* de Supabase | Con `?sslmode=require` al final y la contraseña codificada si tiene símbolos (ver 1.3). |
+| `CORS_ALLOWED_ORIGINS` | `http://localhost:5173` por ahora | Cuando se despliegue el frontend (sección 3) se cambia por su URL de Vercel, sin barra final. |
+
+No hace falta `ALLOWED_HOSTS` ni `CSRF_TRUSTED_ORIGINS`: el dominio de Render se agrega solo. Ninguno de estos valores se escribe en el repositorio: se cargan solo en el panel de Render.
+
+### 2.4 Primer despliegue
+
+1. **Create Web Service**. Render ejecuta `build.sh` (se ve en la pestaña **Logs**): instala las dependencias y aplica las migraciones sobre Supabase. Tarda unos minutos.
+2. Cuando el estado pasa a **Live**, abrir `https://<nombre-del-servicio>.onrender.com/api/health/`: tiene que mostrar `{"status":"ok","database":"ok"}`.
+3. Abrir `https://<nombre-del-servicio>.onrender.com/admin/` e ingresar con el superusuario. No hay que crear otro: **ya existe en Supabase** (se creó en 1.5, y el backend desplegado usa la misma base). La pantalla debe verse con estilos.
+4. Probar el login de la API:
+
+```
+curl -X POST https://<nombre-del-servicio>.onrender.com/api/auth/login/ \
+  -H "Content-Type: application/json" \
+  -d '{"email": "<email del superusuario>", "password": "<contraseña>"}'
+```
+
+Debe devolver un token. Con él se puede consultar, por ejemplo, `GET /api/dashboard/resumen/` con el header `Authorization: Token <token>`.
+
+**URL del backend desplegado:** `COMPLETAR-CON-LA-URL-REAL` (se pega acá apenas el servicio esté en estado Live).
+
+### 2.5 Actualizar el backend
+
+Cada commit a `main` que cambie algo dentro de `backend/` dispara un nuevo despliegue (un cambio en `docs/` o en `frontend/` no lo dispara). Si el cambio agrega tablas, `build.sh` ya corre `migrate` contra Supabase: no hace falta hacerlo a mano. Un despliegue con error no reemplaza al que está funcionando.
+
+### 2.6 Problemas frecuentes
+
+| Síntoma | Causa probable | Solución |
+|---|---|---|
+| El build falla con `SECRET_KEY` | Falta la variable de entorno | Cargarla en **Environment** y volver a desplegar |
+| El build falla en `migrate` con un error de conexión | `DATABASE_URL` mal copiada, o proyecto de Supabase pausado | Ver la tabla de 1.8 y restaurar el proyecto en Supabase |
+| `bash: build.sh: No such file` | **Root Directory** vacío | Poner `backend` en **Root Directory** |
+| El deploy falla al instalar `psycopg2-binary` | Versión de Python demasiado nueva | Confirmar `PYTHON_VERSION` = `3.13.5` |
+| `Bad Request (400)` al abrir la URL | El dominio no está autorizado | Verificar que el servicio sea un Web Service de Render (define `RENDER_EXTERNAL_HOSTNAME`) o agregar el dominio a `ALLOWED_HOSTS` |
+| El panel de administración se ve sin estilos | No se ejecutó `collectstatic` | Revisar que el **Build Command** sea `bash build.sh` |
+| El health check falla y el deploy se cancela | La base no responde | Ver `DATABASE_URL` y el estado del proyecto de Supabase |
+| El frontend recibe un error de CORS | Su dirección no está en `CORS_ALLOWED_ORIGINS` | Agregar la URL de Vercel (con `https://`, sin barra final) y esperar el reinicio |
+
+### 2.7 Limitaciones del plan gratuito
+
+- Si el servicio **no recibe tráfico durante unos 15 minutos, Render lo suspende**; la próxima petición lo reactiva y la primera respuesta puede tardar cerca de un minuto. Es normal y no es un error.
+- El plan gratuito tiene un tope de horas por mes (750 horas gratuitas por workspace a la fecha de esta guía) y no incluye acceso por consola (*Shell*) al servicio; por eso el superusuario se crea desde la compu apuntando a Supabase (ver 1.5).
+- **Antes de la defensa y de grabar el video:** abrir `/api/health/` unos minutos antes para "despertar" el servicio, y confirmar que el proyecto de Supabase está activo.
+- Las condiciones pueden cambiar: revisar las vigentes en la [documentación de Render](https://render.com/docs/deploy-django).
+
+---
 
 ## 3. Frontend en Vercel
 

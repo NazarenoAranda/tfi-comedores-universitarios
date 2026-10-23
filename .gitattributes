@@ -1,0 +1,2 @@
+# Los scripts de shell siempre con fin de línea LF (si no, fallan en el servidor de Render).
+*.sh text eol=lf
