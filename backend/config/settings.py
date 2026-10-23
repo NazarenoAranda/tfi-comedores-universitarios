@@ -75,6 +75,7 @@ INSTALLED_APPS = [
     "caja",
     "ventas",
     "pedidos",
+    "dashboard",
 ]
 
 MIDDLEWARE = [
