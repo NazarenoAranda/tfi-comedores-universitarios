@@ -14,6 +14,7 @@ Estructura prevista: una app de Django por módulo (`usuarios`, `sedes`, `provee
 | `proveedores` — ABM de proveedores | Listo |
 | `caja` — apertura y cierre de caja con totales | Listo |
 | `ventas` — comprobantes de venta con ítems y filtros | Listo |
+| `pedidos` — pedidos a proveedores con ítems y estados | Listo |
 | Resto de los módulos | Pendiente |
 
 ## Requisitos
@@ -182,6 +183,32 @@ o solo con el monto total, sin ítems: `{"medio_pago": "qr", "monto_total": "150
 
 Reglas: **solo se cargan ventas con la caja abierta** (si no hay una abierta en la sede, o está cerrada, responde `400`); con ítems, el monto total se calcula como la suma de cantidad × precio (si se envía y no coincide, `400`); el monto debe ser mayor a cero; la sede, el usuario y la fecha los pone el sistema. La caja se bloquea al guardar la venta, así que una venta no puede "colarse" mientras se está cerrando la caja.
 
+### Pedidos a proveedores (administración y compras)
+
+Los registran compras y la administración (los dos ven todas las sedes). Un pedido nace **pendiente** y pasa a **recibido** o **cancelado**. No se modifica ni se borra por la API: para corregir un pedido pendiente se cancela y se carga uno nuevo.
+
+| Método y dirección | Qué hace |
+|---|---|
+| `POST /api/pedidos/` | Alta: `{"proveedor": <id>, "sede": <id>, "items": [...]}` |
+| `GET /api/pedidos/` | Listado, del más nuevo al más viejo. Filtros: `?sede=`, `?proveedor=`, `?estado=pendiente\|recibido\|cancelado`, `?usuario=`, `?desde=AAAA-MM-DD`, `?hasta=AAAA-MM-DD` (sobre la fecha del pedido, inclusivas) |
+| `GET /api/pedidos/<id>/` | Detalle, con sus ítems |
+| `POST /api/pedidos/<id>/recibir/` | Marca el pedido como recibido y guarda la fecha de recepción |
+| `POST /api/pedidos/<id>/cancelar/` | Cancela el pedido |
+
+```
+POST /api/pedidos/
+{"proveedor": 1, "sede": 1,
+ "items": [{"descripcion": "Harina 25 kg", "cantidad": 4, "precio_unitario": "12000.50"},
+           {"descripcion": "Aceite", "cantidad": 2, "precio_unitario": "3500"}]}
+
+201 Created
+{"id": 5, "proveedor": 1, "proveedor_nombre": "Molinos del Sur", "sede": 1, "sede_nombre": "Comedor Central",
+ "usuario": 3, "usuario_nombre": "Compras", "fecha_pedido": "2026-10-22T14:00:00Z", "fecha_recibido": null,
+ "estado": "pendiente", "monto_total": "55002.00", "items": [...]}
+```
+
+Reglas: el pedido necesita al menos un ítem; el monto total lo calcula el sistema (suma de cantidad × precio); el proveedor y la sede tienen que estar activos; el estado, el usuario y las fechas los pone el sistema. **Solo se puede recibir o cancelar un pedido pendiente**: un pedido recibido o cancelado no cambia más (responde `400`). Los cambios de estado bloquean la fila, así que dos personas no pueden pisarse.
+
 ### Estado del sistema
 
 | Método y dirección | Qué hace |
@@ -199,8 +226,9 @@ Los listados están paginados de a 20 elementos (`count`, `next`, `previous`, `r
 | Proveedores | Todo | — | Todo |
 | Caja | Todo | Solo su sede | — |
 | Comprobantes (ventas) | Todo | Solo su sede | — |
+| Pedidos | Todo | — | Todo |
 
-Los permisos de los módulos siguientes (pedidos, dashboard) se suman a esta tabla a medida que se desarrollan. Las reglas están en `usuarios/permissions.py`.
+Los permisos del módulo siguiente (dashboard) se suman a esta tabla a medida que se desarrollan. Las reglas están en `usuarios/permissions.py`.
 
 ## Primer uso: crear usuarios
 
