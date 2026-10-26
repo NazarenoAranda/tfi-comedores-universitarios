@@ -292,6 +292,12 @@ a {
   border-radius: 6px;
   background: #fff;
   min-width: 0;
+  max-width: 100%;
+}
+
+.campo input,
+.campo select {
+  width: 100%;
 }
 
 .campo input:focus,
@@ -313,7 +319,7 @@ a {
 
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
   gap: 0 16px;
 }
 
@@ -482,6 +488,25 @@ a {
   border-radius: 10px;
   padding: 28px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+}
+
+fieldset {
+  min-width: 0;
+}
+
+/* ---------- Filas de productos al cargar una venta ---------- */
+.item-fila {
+  grid-template-columns: minmax(0, 3fr) minmax(0, 1fr) minmax(0, 1.4fr) auto;
+  align-items: end;
+}
+
+@media (max-width: 640px) {
+  .item-fila {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .item-fila > :first-child {
+    grid-column: 1 / -1;
+  }
 }
 
 /* ---------- Pantallas chicas ---------- */

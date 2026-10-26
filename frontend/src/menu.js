@@ -8,6 +8,18 @@ export const SECCIONES = [
     roles: ["admin", "cajero", "compras"],
   },
   {
+    ruta: "/caja",
+    etiqueta: "Caja",
+    descripcion: "Abrir y cerrar la caja, y ver los totales",
+    roles: ["admin", "cajero"],
+  },
+  {
+    ruta: "/ventas",
+    etiqueta: "Ventas",
+    descripcion: "Cargar y consultar comprobantes de venta",
+    roles: ["admin", "cajero"],
+  },
+  {
     ruta: "/sedes",
     etiqueta: "Sedes",
     descripcion: "Comedores de la cadena",
