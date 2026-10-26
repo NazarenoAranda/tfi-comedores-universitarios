@@ -3,8 +3,14 @@
   --color-acento: #2c5f8a;
   --color-fondo: #f4f7fa;
   --color-texto: #1a1a1a;
+  --color-suave: #5b6b78;
+  --color-borde: #d5dde4;
   --color-ok: #1e7a45;
+  --color-ok-fondo: #dff3e7;
   --color-error: #b3261e;
+  --color-error-fondo: #fbe3e1;
+  --color-aviso: #8a5a00;
+  --color-aviso-fondo: #fff1cc;
 }
 
 * {
@@ -19,13 +25,29 @@ body {
   line-height: 1.5;
 }
 
+h1 {
+  color: var(--color-primario);
+  margin-top: 0;
+}
+
+h2 {
+  color: var(--color-primario);
+  font-size: 1.15rem;
+  margin-top: 28px;
+}
+
+a {
+  color: var(--color-acento);
+}
+
+/* ---------- Estructura ---------- */
 .header {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 14px 24px;
+  gap: 12px 20px;
+  padding: 12px 24px;
   background: var(--color-primario);
   color: #fff;
 }
@@ -36,13 +58,15 @@ body {
 
 .nav {
   display: flex;
-  gap: 16px;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1;
 }
 
 .nav a {
   color: #cfe0ee;
   text-decoration: none;
-  padding: 4px 8px;
+  padding: 4px 10px;
   border-radius: 4px;
 }
 
@@ -52,39 +76,423 @@ body {
   background: var(--color-acento);
 }
 
+.sesion {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sesion-datos {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+  line-height: 1.2;
+}
+
+.sesion-datos small {
+  color: #a9c2d6;
+}
+
 .content {
-  max-width: 960px;
+  max-width: 1040px;
   margin: 0 auto;
-  padding: 32px 24px;
+  padding: 28px 24px 48px;
 }
 
-h1 {
-  color: var(--color-primario);
+.cargando {
+  padding: 40px;
+  text-align: center;
+  color: var(--color-suave);
 }
 
-a {
-  color: var(--color-acento);
+.detalle {
+  color: var(--color-suave);
+  font-size: 0.9rem;
 }
 
+.encabezado-pantalla {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.encabezado-pantalla h1 {
+  margin: 0;
+}
+
+/* ---------- Estado del servidor ---------- */
 .estado {
   display: inline-block;
-  padding: 8px 14px;
+  padding: 6px 12px;
   border-radius: 6px;
   font-weight: 600;
+  font-size: 0.9rem;
   background: #e3e8ed;
 }
 
 .estado-conectado {
-  background: #dff3e7;
+  background: var(--color-ok-fondo);
   color: var(--color-ok);
 }
 
 .estado-error {
-  background: #fbe3e1;
+  background: var(--color-error-fondo);
   color: var(--color-error);
 }
 
-.detalle {
-  color: #555;
+/* ---------- Tarjetas ---------- */
+.grid-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+}
+
+.card-link {
+  text-decoration: none;
+  color: var(--color-texto);
+}
+
+.card-link:hover {
+  border-color: var(--color-acento);
+  box-shadow: 0 2px 8px rgba(26, 58, 82, 0.12);
+}
+
+.card-link span {
+  color: var(--color-suave);
   font-size: 0.9rem;
+}
+
+.panel {
+  background: #fff;
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+  padding: 18px;
+  margin: 16px 0;
+}
+
+.panel h2:first-child {
+  margin-top: 0;
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.kpi {
+  background: var(--color-fondo);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+
+.kpi span {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--color-suave);
+}
+
+.kpi strong {
+  font-size: 1.2rem;
+}
+
+/* ---------- Botones ---------- */
+.btn {
+  display: inline-block;
+  font: inherit;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn-primario {
+  background: var(--color-acento);
+  color: #fff;
+}
+
+.btn-primario:hover:not(:disabled) {
+  background: var(--color-primario);
+}
+
+.btn-secundario {
+  background: #fff;
+  color: var(--color-acento);
+  border-color: var(--color-acento);
+}
+
+.btn-claro {
+  background: transparent;
+  color: #fff;
+  border-color: #6f93b0;
+}
+
+.btn-peligro {
+  background: #fff;
+  color: var(--color-error);
+  border-color: var(--color-error);
+}
+
+.btn-peligro:hover:not(:disabled) {
+  background: var(--color-error-fondo);
+}
+
+.btn-chico {
+  padding: 3px 10px;
+  font-size: 0.85rem;
+}
+
+.btn-ancho {
+  width: 100%;
+}
+
+/* ---------- Formularios ---------- */
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+
+.campo > span {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-primario);
+}
+
+.campo input,
+.campo select,
+.campo textarea,
+.filtros input,
+.filtros select {
+  font: inherit;
+  padding: 8px 10px;
+  border: 1px solid var(--color-borde);
+  border-radius: 6px;
+  background: #fff;
+  min-width: 0;
+}
+
+.campo input:focus,
+.campo select:focus,
+.filtros input:focus,
+.filtros select:focus {
+  outline: 2px solid var(--color-acento);
+  outline-offset: 0;
+}
+
+.campo-error input,
+.campo-error select {
+  border-color: var(--color-error);
+}
+
+.campo-error small {
+  color: var(--color-error);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0 16px;
+}
+
+.form-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px 14px;
+  margin: 14px 0;
+}
+
+.filtros label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.8rem;
+  color: var(--color-suave);
+}
+
+/* ---------- Tablas ---------- */
+.tabla-wrap {
+  overflow-x: auto;
+  background: #fff;
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.93rem;
+}
+
+.tabla th,
+.tabla td {
+  padding: 9px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-borde);
+  vertical-align: top;
+}
+
+.tabla th {
+  background: #eaf0f5;
+  color: var(--color-primario);
+  white-space: nowrap;
+}
+
+.tabla tr:last-child td {
+  border-bottom: none;
+}
+
+.tabla .num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.tabla .acciones {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.tabla .acciones .btn {
+  margin-left: 6px;
+}
+
+.tabla tr.inactiva td {
+  color: var(--color-suave);
+}
+
+.vacio {
+  padding: 28px;
+  text-align: center;
+  color: var(--color-suave);
+}
+
+.paginacion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin: 14px 0;
+  font-size: 0.9rem;
+  color: var(--color-suave);
+}
+
+/* ---------- Avisos y etiquetas ---------- */
+.alerta {
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin: 12px 0;
+  font-size: 0.95rem;
+}
+
+.alerta-error {
+  background: var(--color-error-fondo);
+  color: var(--color-error);
+}
+
+.alerta-ok {
+  background: var(--color-ok-fondo);
+  color: var(--color-ok);
+}
+
+.alerta-info {
+  background: #e3eef7;
+  color: var(--color-primario);
+}
+
+.badge {
+  display: inline-block;
+  padding: 1px 9px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: #e3e8ed;
+}
+
+.badge-ok {
+  background: var(--color-ok-fondo);
+  color: var(--color-ok);
+}
+
+.badge-baja {
+  background: #e3e8ed;
+  color: var(--color-suave);
+}
+
+.badge-aviso {
+  background: var(--color-aviso-fondo);
+  color: var(--color-aviso);
+}
+
+.badge-error {
+  background: var(--color-error-fondo);
+  color: var(--color-error);
+}
+
+/* ---------- Login ---------- */
+.login-pagina {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: linear-gradient(160deg, var(--color-primario), var(--color-acento));
+}
+
+.login-caja {
+  width: 100%;
+  max-width: 400px;
+  background: #fff;
+  border-radius: 10px;
+  padding: 28px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+}
+
+/* ---------- Pantallas chicas ---------- */
+@media (max-width: 640px) {
+  .header {
+    padding: 10px 14px;
+  }
+  .content {
+    padding: 18px 14px 40px;
+  }
+  .sesion-datos {
+    text-align: left;
+  }
 }

@@ -1,20 +1,21 @@
 # Frontend
 
-Aplicación web del sistema, desarrollada con **React + Vite** y **React Router**. Consume la API REST del backend y se despliega en Vercel.
+Aplicación web del sistema, desarrollada con **React + Vite**. Consume la API REST del backend (autenticación por token) y se despliega en Vercel.
 
 ## Estado
 
-| Parte | Estado |
+| Pantalla | Estado |
 |---|---|
-| Proyecto base (Vite, React, router, estructura de carpetas) | Listo |
-| Cliente de la API (URL por variable de entorno, header con token) | Listo |
-| Login y rutas protegidas | Pendiente |
-| Pantallas de los módulos | Pendiente |
+| Inicio de sesión (login con token), rutas protegidas por rol, menú y diseño general | Listo |
+| Sedes y proveedores | Pendiente (27/10) |
+| Caja y ventas | Pendiente (28/10) |
+| Pedidos | Pendiente (29/10) |
+| Panel consolidado | Pendiente (30/10) |
 
 ## Requisitos
 
 - Node.js 20.19 o superior (o 22.12 o superior) y npm.
-- El backend levantado para ver la conexión (ver [`../backend/README.md`](../backend/README.md)).
+- El backend levantado (ver [`../backend/README.md`](../backend/README.md)) y, para tener datos, los datos de ejemplo (ver [`../database/README.md`](../database/README.md)).
 
 ## Puesta en marcha en local
 
@@ -25,30 +26,24 @@ npm install
 npm run dev
 ```
 
-La aplicación queda en http://localhost:5173. La pantalla de inicio muestra si se pudo conectar con el backend.
+Se abre en http://localhost:5173. La dirección del backend sale de `VITE_API_URL` del archivo `.env` de la **raíz del repositorio** (copia de `.env.example`); por defecto, `http://localhost:8000`. Si cambiás ese archivo, reiniciá `npm run dev`.
 
-Otros comandos:
+Para ingresar hace falta un usuario: los de ejemplo (`admin@comedores.test`, `compras@comedores.test`, `cajero.central@comedores.test`, contraseña `Demo-1234`) o el superusuario creado en el backend.
 
-| Comando | Qué hace |
-|---|---|
-| `npm run dev` | Servidor de desarrollo con recarga automática |
-| `npm run build` | Genera la versión de producción en `dist/` |
-| `npm run preview` | Sirve la versión de producción para probarla |
+Otros comandos: `npm run build` (genera la versión de producción en `dist/`) y `npm run preview` (la sirve en local).
 
-## Configuración
-
-La URL del backend se toma de la variable **`VITE_API_URL`**. Vite la lee del archivo `.env` de la **raíz del repositorio** (copiar `../.env.example` como `.env`). En producción se define en el panel de Vercel.
-
-Si no está definida, se usa `http://localhost:8000`.
-
-## Estructura
+## Cómo está organizado
 
 ```
 src/
-  api/          Cliente HTTP (URL base y token de autenticación)
-  components/   Componentes reutilizables (Layout con el menú)
-  pages/        Pantallas, una por ruta
-  App.jsx       Definición de rutas
-  main.jsx      Punto de entrada
-  index.css     Estilos globales
+  api/        client.js (llamadas a la API con el token), errores.js (mensajes de error)
+  auth/       AuthContext.jsx (sesión: login/logout), RutaProtegida.jsx (por rol)
+  components/ Layout (encabezado y menú), Mensaje, Paginacion
+  pages/      una pantalla por archivo
+  utils/      formato.js (importes y fechas)
+  menu.js     lista de pantallas y qué roles las ven
+  App.jsx     rutas
 ```
+
+- **Sesión:** al ingresar, el backend devuelve un token que se guarda en el navegador y se envía en cada llamada (`Authorization: Token <token>`). Si el servidor lo rechaza, la aplicación vuelve al login.
+- **Roles:** el menú y las rutas dependen del rol (administración, cajero, compras). Es una comodidad de la interfaz: los permisos reales los controla siempre el backend.
