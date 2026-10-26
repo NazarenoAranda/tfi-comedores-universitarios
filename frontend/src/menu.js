@@ -7,6 +7,18 @@ export const SECCIONES = [
     etiqueta: "Inicio",
     roles: ["admin", "cajero", "compras"],
   },
+  {
+    ruta: "/sedes",
+    etiqueta: "Sedes",
+    descripcion: "Comedores de la cadena",
+    roles: ["admin", "cajero", "compras"],
+  },
+  {
+    ruta: "/proveedores",
+    etiqueta: "Proveedores",
+    descripcion: "Alta, modificación y baja de proveedores",
+    roles: ["admin", "compras"],
+  },
 ];
 
 export function seccionesPara(rol) {
