@@ -10,7 +10,7 @@ Aplicación web del sistema, desarrollada con **React + Vite**. Consume la API R
 | Sedes y proveedores (listado, búsqueda, alta, modificación y baja) | Listo |
 | Caja (apertura, cierre, totales e historial) y ventas (cargar y listar comprobantes) | Listo |
 | Pedidos a proveedores (alta, listado con filtros, recibir y cancelar) | Listo |
-| Panel consolidado | Pendiente (30/10) |
+| Panel consolidado (ventas y pedidos por sede y consolidados, con filtros y gráfico) | Listo |
 
 ## Requisitos
 

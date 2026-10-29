@@ -8,6 +8,12 @@ export const SECCIONES = [
     roles: ["admin", "cajero", "compras"],
   },
   {
+    ruta: "/panel",
+    etiqueta: "Panel",
+    descripcion: "Ventas y pedidos por sede y consolidados",
+    roles: ["admin"],
+  },
+  {
     ruta: "/caja",
     etiqueta: "Caja",
     descripcion: "Abrir y cerrar la caja, y ver los totales",

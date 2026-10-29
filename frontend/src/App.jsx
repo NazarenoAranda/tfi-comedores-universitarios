@@ -6,6 +6,7 @@ import Caja from "./pages/Caja.jsx";
 import Home from "./pages/Home.jsx";
 import Login from "./pages/Login.jsx";
 import NotFound from "./pages/NotFound.jsx";
+import Panel from "./pages/Panel.jsx";
 import Pedidos from "./pages/Pedidos.jsx";
 import Proveedores from "./pages/Proveedores.jsx";
 import Sedes from "./pages/Sedes.jsx";
@@ -21,6 +22,9 @@ export default function App() {
         <Route element={<Layout />}>
           <Route index element={<Home />} />
           <Route path="sedes" element={<Sedes />} />
+          <Route element={<RutaProtegida roles={["admin"]} />}>
+            <Route path="panel" element={<Panel />} />
+          </Route>
           <Route element={<RutaProtegida roles={["admin", "cajero"]} />}>
             <Route path="caja" element={<Caja />} />
             <Route path="ventas" element={<Ventas />} />
