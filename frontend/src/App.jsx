@@ -6,6 +6,7 @@ import Caja from "./pages/Caja.jsx";
 import Home from "./pages/Home.jsx";
 import Login from "./pages/Login.jsx";
 import NotFound from "./pages/NotFound.jsx";
+import Pedidos from "./pages/Pedidos.jsx";
 import Proveedores from "./pages/Proveedores.jsx";
 import Sedes from "./pages/Sedes.jsx";
 import Ventas from "./pages/Ventas.jsx";
@@ -26,6 +27,7 @@ export default function App() {
           </Route>
           <Route element={<RutaProtegida roles={["admin", "compras"]} />}>
             <Route path="proveedores" element={<Proveedores />} />
+            <Route path="pedidos" element={<Pedidos />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Route>

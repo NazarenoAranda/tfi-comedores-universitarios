@@ -7,9 +7,9 @@ Aplicación web del sistema, desarrollada con **React + Vite**. Consume la API R
 | Pantalla | Estado |
 |---|---|
 | Inicio de sesión (login con token), rutas protegidas por rol, menú y diseño general | Listo |
-| Sedes y proveedores | Pendiente (27/10) |
-| Caja y ventas | Pendiente (28/10) |
-| Pedidos | Pendiente (29/10) |
+| Sedes y proveedores (listado, búsqueda, alta, modificación y baja) | Listo |
+| Caja (apertura, cierre, totales e historial) y ventas (cargar y listar comprobantes) | Listo |
+| Pedidos a proveedores (alta, listado con filtros, recibir y cancelar) | Listo |
 | Panel consolidado | Pendiente (30/10) |
 
 ## Requisitos

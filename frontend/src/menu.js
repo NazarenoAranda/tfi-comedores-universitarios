@@ -20,6 +20,12 @@ export const SECCIONES = [
     roles: ["admin", "cajero"],
   },
   {
+    ruta: "/pedidos",
+    etiqueta: "Pedidos",
+    descripcion: "Pedidos a proveedores: cargar, recibir y cancelar",
+    roles: ["admin", "compras"],
+  },
+  {
     ruta: "/sedes",
     etiqueta: "Sedes",
     descripcion: "Comedores de la cadena",
