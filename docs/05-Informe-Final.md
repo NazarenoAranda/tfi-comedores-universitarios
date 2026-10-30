@@ -11,8 +11,6 @@
 | **API en línea (backend)** | `COMPLETAR-URL-DE-RENDER`/api/health/ |
 | **Video de presentación** | `COMPLETAR-LINK-DEL-VIDEO` |
 
-> *Versión en elaboración: este commit incluye la primera parte; la segunda (7 a 11) se agrega en el siguiente.*
->
 > **Índice.** Primera parte: 1. Problema · 2. Solución · 3. Arquitectura · 4. Módulos · 5. Tecnologías · 6. Despliegue.
 > Segunda parte: 7. Resultados · 8. Dificultades · 9. Aprendizajes · 10. Trabajo futuro · 11. Conclusión.
 
@@ -167,4 +165,125 @@ La guía paso a paso (con todas las variables y la lista de verificación) está
 
 ---
 
-*Continúa en la segunda parte: resultados, dificultades, aprendizajes y trabajo futuro.*
+# Segunda parte
+
+## 7. Resultados
+
+### 7.1 Objetivos cumplidos
+
+| Objetivo de la propuesta | Estado | Cómo se verifica |
+|---|---|---|
+| Registro de comprobantes de venta por sede | Cumplido | Pantalla *Ventas*; pruebas del módulo `ventas` (17) |
+| Listado y consulta con filtros por sede y fecha | Cumplido (y también por caja, usuario y medio de pago) | Pruebas de filtros |
+| Cierre de caja con cálculo automático | Cumplido | Pantalla *Caja*; pruebas del módulo `caja` (10) |
+| Alta y listado de proveedores | Cumplido (con modificación y baja) | Pantalla *Proveedores* |
+| Alta y seguimiento de pedidos | Cumplido (pendiente, recibido, cancelado) | Pantalla *Pedidos*; pruebas (10) |
+| Panel consolidado para la administración | Cumplido | Pantalla *Panel*; pruebas (6) |
+| Permisos diferenciados por rol *(opcional)* | Cumplido | Pruebas de permisos en todos los módulos |
+| Reportes comparativos entre sedes *(opcional)* | Parcial | El panel muestra las sedes lado a lado |
+| Alertas de pedidos demorados *(opcional)* | No realizado | Ver trabajo futuro |
+| Exportación del cierre de caja a PDF/Excel *(opcional)* | No realizado | Ver trabajo futuro |
+
+**El MVP completo está terminado y desplegado.** De las cuatro funcionalidades opcionales se hizo una completa (permisos por rol) y una parcial.
+
+### 7.2 Calidad del software
+
+- **54 pruebas automáticas** del backend (usuarios 11, caja 10, ventas 17, pedidos 10, panel 6). Se ejecutan en menos de dos segundos con `python manage.py test` y pasan tanto sobre SQLite como sobre PostgreSQL.
+- **Las pruebas detectan errores de verdad:** se rompieron a propósito dos reglas (permitir ventas con la caja cerrada e ignorar el monto de apertura en el cierre) y las pruebas correspondientes fallaron, como corresponde.
+- **Recorrido completo en un navegador real:** se automatizó, con un navegador, el flujo de punta a punta (ingreso, apertura de caja, venta, cierre, pedido y panel) contra una versión de producción local (frontend compilado y backend con `gunicorn` y `DEBUG=False`), incluyendo la vista en pantalla de celular y el comportamiento de cada rol.
+- **Base de datos:** el script `schema.sql` se verificó contra la base que crean las migraciones y son idénticos; los datos de ejemplo cargan sin errores.
+- **Prueba en el sistema publicado:** se repitió el recorrido sobre las direcciones reales el `COMPLETAR (fecha)`, con resultado `COMPLETAR (sin problemas / problemas encontrados)`.
+
+### 7.3 El sistema en funcionamiento
+
+Las capturas de pantalla del recorrido completo (ingreso, apertura de caja, carga de una venta, cierre, proveedores, pedidos, sedes y panel por sede) están en el [Manual de uso](./06-Manual-de-Uso.md); el guion del video, en [`07-Guion-Video.md`](./07-Guion-Video.md).
+
+### 7.4 Cumplimiento del problema original
+
+El dolor central era el **tiempo perdido armando el cierre de caja** y la **falta de una vista consolidada**. Ambos quedan resueltos por diseño: el cierre se calcula solo, con un clic, a partir de las ventas ya cargadas, y el panel suma todas las sedes sin intervención manual. No se midieron tiempos reales con usuarios, porque el caso es simulado: la mejora es de diseño, no un resultado estadístico.
+
+### 7.5 Tamaño del proyecto
+
+| Dato | Valor |
+|---|---|
+| Módulos del backend (apps de Django) | 7 |
+| Tablas de negocio | 8 |
+| Pantallas del frontend | 8 (más la de página no encontrada) |
+| Pruebas automáticas | 54 |
+| Documentos | Propuesta, diseño de BD y módulos, arquitectura, despliegue, informe, manual de uso y guion del video |
+
+## 8. Dificultades encontradas
+
+> *Esta sección recoge los problemas técnicos reales del proceso. Conviene que cada integrante la revise y agregue, con sus palabras, las dificultades que vivió en primera persona (por ejemplo, de coordinación o de tiempos).*
+
+| Dificultad | Cómo se resolvió |
+|---|---|
+| **Conectar Render con Supabase.** La conexión directa de Supabase usa direcciones IPv6, que no siempre son alcanzables desde el hosting. | Se usó el *Session pooler* (IPv4), con `sslmode=require`. |
+| **Riesgo de dos cajas abiertas a la vez.** Si dos cajeros abren la caja de una sede al mismo tiempo, la validación del backend podría pasar en ambos casos. | Se agregó una restricción en la base de datos (índice único parcial) y el backend traduce ese rechazo en un mensaje claro. |
+| **Cambios de estado simultáneos.** Dos personas cerrando una caja o recibiendo un pedido a la vez podrían pisarse. | Se bloquea la fila durante la operación (`select_for_update`) dentro de una transacción. |
+| **Errores de redondeo con el dinero.** Los números decimales de JavaScript pierden precisión. | Los importes se guardan como `NUMERIC(12,2)` y viajan como texto; el frontend los formatea con el formato argentino. |
+| **CORS y variables de entorno en producción.** Sin agregar el dominio de Vercel a los orígenes permitidos, el navegador bloquea las llamadas del frontend a la API. | Se documentó el orden de despliegue: primero la API, después el frontend, y por último cargar su dirección en `CORS_ALLOWED_ORIGINS`. |
+| **Rutas del frontend al recargar.** Sin una regla especial, al actualizar la página en una ruta interna Vercel devuelve error 404. | Se agregó `vercel.json` con la regla de reescritura para aplicaciones de una sola página. |
+| **Sesión tras cerrar sesión.** Al volver a ingresar, la aplicación llevaba a la última página visitada en vez de al inicio. | Se distingue el cierre de sesión voluntario del vencimiento de la sesión. |
+| **Pantallas de celular.** Las filas de ítems se desbordaban en pantallas angostas. | Se rehicieron con columnas flexibles y campos que ocupan el ancho disponible. |
+| **Subir archivos a GitHub desde la web.** La subida por navegador no admite archivos vacíos ni conserva permisos de ejecución, y reemplaza archivos del mismo nombre. | Se ajustó la estructura de los archivos y se escribió, para cada entrega, una guía de subida con el mensaje de commit. |
+| **Plan gratuito de Render.** El servicio se duerme y el primer pedido tarda. | Se documentó el comportamiento y la recomendación de "despertar" la API antes de una demostración. |
+| **Coordinar el trabajo entre dos personas.** Dividir módulos y respetar el cronograma. | Se trabajó con un cronograma por semanas, un commit por funcionalidad y un reparto alternado de los días. |
+
+## 9. Aprendizajes
+
+**Técnicos**
+
+- **Las reglas importantes deben protegerse en más de una capa.** Validar en el backend no alcanza cuando hay operaciones simultáneas: una restricción en la base de datos es la última línea de defensa.
+- **El frontend no es una barrera de seguridad.** Ocultar un botón mejora la experiencia; los permisos reales se aplican siempre en la API.
+- **Un monolito modular alcanza.** Separar por módulos y por capas dio orden y facilitó repartir el trabajo sin la complejidad de los microservicios.
+- **El despliegue es parte del desarrollo.** Variables de entorno, CORS, conexión a la base y comandos de construcción se descubren recién al publicar; conviene hacerlo temprano y probar en condiciones parecidas a producción (con `DEBUG=False`).
+- **Las pruebas automáticas dan confianza para cambiar.** Poder correr 54 pruebas en un par de segundos permitió ajustar reglas sin miedo a romper otras. Además, una prueba que nunca falla no prueba nada: por eso se rompió el código a propósito para comprobarlas.
+- **El dinero se trata con tipos exactos**, nunca con números de punto flotante.
+- **Documentar mientras se construye** evita reconstruir de memoria; el esquema final difiere del diseño inicial y registrar esas diferencias es parte del trabajo.
+
+**De trabajo en equipo y de proceso**
+
+- Un **cronograma con commits pequeños y frecuentes** deja un historial claro y reparte la carga.
+- Revisar el trabajo del otro antes de integrarlo encuentra errores que uno no ve en lo propio.
+- Escribir primero la propuesta, el diseño de la base y la arquitectura ahorró retrabajo: casi todo el modelo conceptual sobrevivió intacto hasta el final.
+
+> *Se sugiere que cada integrante agregue acá un párrafo propio sobre lo que más aprendió.*
+
+## 10. Trabajo futuro
+
+| Mejora | Qué aportaría |
+|---|---|
+| **Exportación del cierre de caja a PDF y Excel** | Entregar el cierre a contaduría sin copiar datos a mano |
+| **Alertas de pedidos demorados** | Avisar de pedidos pendientes hace demasiado tiempo |
+| **Reportes comparativos** con gráficos y rangos de fechas | Análisis de tendencias entre sedes |
+| **Control de stock** vinculado a pedidos y ventas | Saber qué hay en cada comedor |
+| **Catálogo de productos** con precios | Cargar ventas más rápido, sin escribir la descripción cada vez |
+| **Anulación de comprobantes** con auditoría | Corregir errores sin borrar historial |
+| **Diferencias de caja** (efectivo contado vs. calculado) | Detectar faltantes o sobrantes al cerrar |
+| **Recuperación de contraseña** por correo y vencimiento de sesiones | Mayor seguridad y autonomía de los usuarios |
+| **Aplicación instalable (PWA) y modo sin conexión** | Seguir vendiendo si se corta internet |
+| **Pruebas automáticas del frontend** | Cubrir también la interfaz |
+| **Pasar a un plan pago de hosting** | Evitar que la API se duerma y mejorar el rendimiento |
+| **Facturación electrónica** (AFIP) | Cumplimiento fiscal para un uso real |
+
+## 11. Conclusión
+
+Se logró el objetivo central: **un sistema web completo, funcionando en línea, que reemplaza las planillas y el papel** por un flujo único de caja, ventas, proveedores y pedidos, con una vista consolidada para la administración y permisos por rol. El proyecto cubrió todo el ciclo de desarrollo: relevamiento del problema, diseño de la base de datos y de la arquitectura, construcción del backend y del frontend, pruebas, despliegue en tres servicios y documentación.
+
+Más allá del producto, el proyecto dejó la experiencia de **llevar una idea desde la propuesta hasta una aplicación publicada**, tomando decisiones, equivocándose y corrigiendo, y trabajando de a dos con un cronograma. El resultado es una base sólida sobre la que se pueden construir las mejoras de la sección 10.
+
+---
+
+## Anexo — Documentación del proyecto
+
+| Documento | Contenido |
+|---|---|
+| [`01-Propuesta.md`](./01-Propuesta.md) | Problema, alcance, viabilidad |
+| [`02-Diseno-BD-Modulos.md`](./02-Diseno-BD-Modulos.md) | Diseño de la base de datos, módulos y diferencias con el diseño original |
+| [`03-Arquitectura.md`](./03-Arquitectura.md) | Arquitectura, capas, tecnologías y justificación |
+| [`04-Despliegue.md`](./04-Despliegue.md) | Guía de despliegue paso a paso |
+| [`06-Manual-de-Uso.md`](./06-Manual-de-Uso.md) | Manual de uso con capturas |
+| [`07-Guion-Video.md`](./07-Guion-Video.md) | Guion del video de presentación |
+| [`../database/schema.sql`](../database/schema.sql) | Estructura real de la base de datos |
+| [`../backend/README.md`](../backend/README.md) | Instalación, API y pruebas del backend |
