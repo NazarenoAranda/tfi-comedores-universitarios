@@ -9,7 +9,7 @@ La consigna de la cátedra exige que al menos un componente principal esté func
 |---|---|---|
 | Base de datos (PostgreSQL) | Supabase | **Documentada en este archivo** |
 | Backend (Django + DRF) | Render | **Documentada en este archivo** |
-| Frontend (React + Vite) | Vercel | Pendiente (se documenta al desplegarlo) |
+| Frontend (React + Vite) | Vercel | **Documentada en este archivo** |
 
 ```mermaid
 flowchart LR
@@ -221,4 +221,78 @@ Cada commit a `main` que cambie algo dentro de `backend/` dispara un nuevo despl
 
 ## 3. Frontend en Vercel
 
-*Pendiente. Se documenta al desplegarlo (31/10).*
+### 3.1 Qué se despliega
+
+Se despliega la carpeta `frontend/` del repositorio como sitio estático: Vercel ejecuta `npm run build` (Vite) y publica la carpeta `dist/`. Como es una aplicación de una sola página, el archivo `frontend/vercel.json` le indica a Vercel que cualquier dirección interna (por ejemplo `/ventas`) devuelva la aplicación; sin eso, al recargar la página en una dirección que no sea la raíz daría error 404.
+
+La aplicación necesita saber dónde está el backend. Esa dirección se define con la variable `VITE_API_URL`, que Vite **incorpora al construir** el sitio (no se lee en tiempo de ejecución): si se cambia, hay que volver a desplegar.
+
+### 3.2 Crear el proyecto
+
+Requisito: el backend ya desplegado en Render (sección 2) y su URL a mano.
+
+1. Crear una cuenta en [vercel.com](https://vercel.com) (se puede ingresar con GitHub; el plan *Hobby* alcanza) y autorizar el acceso al repositorio `tfi-comedores-universitarios`.
+2. **Add New… → Project** y, en la lista de repositorios, **Import** el del proyecto.
+3. En la pantalla de configuración:
+
+| Campo | Valor |
+|---|---|
+| **Project Name** | `tfi-comedores` (define la dirección: `https://tfi-comedores.vercel.app`; si está tomado, Vercel propone otra) |
+| **Framework Preset** | Vite (lo detecta solo) |
+| **Root Directory** | `frontend` (botón **Edit**) |
+| **Build Command / Output Directory** | los que propone Vercel (`npm run build` y `dist`) |
+| **Environment Variables** | `VITE_API_URL` = la URL del backend en Render, con `https://` y **sin barra final** (por ejemplo `https://tfi-comedores-api.onrender.com`) |
+
+4. **Deploy**. Tarda un par de minutos. Cuando termina, Vercel muestra la dirección pública del sitio.
+
+La versión de Node que usa Vercel (por defecto, la última LTS) es compatible con el proyecto (`engines` en `frontend/package.json`); no hace falta cambiarla.
+
+**URL del frontend desplegado:** `COMPLETAR-CON-LA-URL-REAL` (se pega acá apenas el sitio esté publicado).
+
+### 3.3 Autorizar el frontend en el backend (CORS)
+
+El navegador solo permite que la página llame a la API si el backend la autoriza. En el panel de **Render → servicio del backend → Environment**, cambiar la variable `CORS_ALLOWED_ORIGINS` por la dirección del frontend, con `https://` y **sin barra final**:
+
+```
+CORS_ALLOWED_ORIGINS=https://tfi-comedores.vercel.app
+```
+
+(Si hace falta seguir probando desde la compu, se agrega también `http://localhost:5173`, separado por coma.) Render reinicia el servicio solo al guardar. Si no se hace este paso, el login falla con un error de red / CORS en la consola del navegador.
+
+### 3.4 Actualizar el frontend
+
+Cada commit a `main` que cambie algo dentro de `frontend/` dispara un nuevo despliegue automático. Cada despliegue tiene además su propia dirección de vista previa, que **no** está autorizada por CORS (solo funciona la dirección principal del proyecto). Si se cambia `VITE_API_URL` en **Settings → Environment Variables**, hay que hacer **Redeploy** para que tome el valor nuevo.
+
+### 3.5 Problemas frecuentes
+
+| Síntoma | Causa probable | Solución |
+|---|---|---|
+| El login muestra "No se pudo conectar con el servidor" | `VITE_API_URL` mal escrita, o falta autorizar el frontend en el backend | Revisar la variable (con `https://`, sin barra final), volver a desplegar y revisar `CORS_ALLOWED_ORIGINS` (3.3) |
+| Error de CORS en la consola del navegador | La dirección del frontend no está en `CORS_ALLOWED_ORIGINS`, o está con barra final | Corregirla en Render (3.3) |
+| Al recargar una pantalla (por ejemplo `/ventas`) aparece 404 | Falta `frontend/vercel.json` o el **Root Directory** no es `frontend` | Verificar ambos y volver a desplegar |
+| Pantalla en blanco | El build falló o se desplegó otra carpeta | Revisar **Deployments → Build Logs** y el **Root Directory** |
+| Cambié la variable y no pasa nada | Vite incorpora la variable al construir | **Redeploy** del último despliegue |
+| La primera carga tarda casi un minuto | El backend gratuito de Render estaba dormido | Normal: la pantalla de login lo avisa; esperar y no cerrar la página |
+
+### 3.6 Limitaciones del plan gratuito
+
+- El plan *Hobby* de Vercel es para uso personal y no comercial, adecuado para este trabajo académico. Los límites y condiciones pueden cambiar: revisar los vigentes en la [documentación de Vercel](https://vercel.com/docs/plans/hobby).
+- El sitio en sí no se "duerme" (son archivos estáticos); lo que puede estar dormido es el backend (2.7) o la base (1.9). **Antes de la defensa y del video**, abrir la aplicación unos minutos antes y verificar que se pueda ingresar.
+
+---
+
+## 4. Prueba del flujo completo en línea
+
+Con los tres componentes desplegados, se recorre el flujo principal del sistema con los usuarios de ejemplo (contraseña `Demo-1234`; datos cargados con `database/datos_ejemplo.sql`). Cada paso se marca al verificarlo:
+
+| Paso | Quién | Qué se hace | Resultado esperado |
+|---|---|---|---|
+| 1 | — | Abrir la dirección del frontend | Aparece el login; sin sesión, cualquier dirección interna también lleva al login |
+| 2 | Cajero (`cajero.ciencias@comedores.test`) | Ingresar → **Caja** → abrir la caja con un monto inicial | La caja queda abierta y se muestra su resumen |
+| 3 | Cajero | **Ventas** → cargar una venta con productos | Aparece primero en el listado, con el total correcto |
+| 4 | Cajero | **Caja** → **Cerrar caja** | Se muestra el efectivo esperado (apertura + ventas en efectivo) y el cierre queda en el historial; ya no se pueden cargar ventas en esa caja |
+| 5 | Compras (`compras@comedores.test`) | **Pedidos** → registrar un pedido a un proveedor | Queda *Pendiente*; al marcarlo como *Recibido* se guarda la fecha de recepción |
+| 6 | Administración (`admin@comedores.test`) | **Panel** | Los totales de ventas y de pedidos incluyen lo cargado en los pasos 3 y 5, por sede y consolidados |
+| 7 | Cajero | Intentar entrar a **Panel** o **Proveedores** (por la dirección) | "Sin acceso": cada rol ve solo lo suyo |
+
+Esta misma secuencia se verificó de forma automática con un navegador real contra una versión de producción (frontend compilado + backend con `gunicorn` y `DEBUG=False`) antes del despliegue. Falta repetirla sobre las direcciones reales y anotar acá la fecha en que se hizo: `COMPLETAR (fecha de la prueba en línea)`.

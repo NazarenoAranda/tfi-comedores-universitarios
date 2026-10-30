@@ -12,6 +12,8 @@ Aplicación web del sistema, desarrollada con **React + Vite**. Consume la API R
 | Pedidos a proveedores (alta, listado con filtros, recibir y cancelar) | Listo |
 | Panel consolidado (ventas y pedidos por sede y consolidados, con filtros y gráfico) | Listo |
 
+Despliegue en Vercel: ver [`../docs/04-Despliegue.md`](../docs/04-Despliegue.md), sección 3. El archivo `vercel.json` hace que las direcciones internas (por ejemplo `/ventas`) funcionen al recargar la página.
+
 ## Requisitos
 
 - Node.js 20.19 o superior (o 22.12 o superior) y npm.
