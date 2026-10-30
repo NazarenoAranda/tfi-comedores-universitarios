@@ -4,7 +4,7 @@ Motor: **PostgreSQL** (alojada en Supabase).
 
 | Archivo | Contenido |
 |---|---|
-| [`schema.sql`](schema.sql) | Script DDL: crea las 8 tablas del sistema y sus índices (diseño original) |
+| [`schema.sql`](schema.sql) | Script DDL con la estructura **real** de las 8 tablas del sistema, sus restricciones e índices |
 | [`datos_ejemplo.sql`](datos_ejemplo.sql) | Script DML: datos de ejemplo para probar y demostrar el sistema |
 | [`limpiar_datos_ejemplo.sql`](limpiar_datos_ejemplo.sql) | Borra los datos de ejemplo para poder volver a cargarlos |
 
@@ -12,7 +12,11 @@ El diagrama entidad-relación, el diccionario de datos y la explicación de cada
 
 ## Cómo se crean las tablas
 
-Las tablas reales las crea Django con `python manage.py migrate` (ver [`../backend/README.md`](../backend/README.md)); usan los mismos nombres que `schema.sql`. Los datos de ejemplo se cargan **después** de las migraciones.
+Las tablas reales las crea Django con `python manage.py migrate` (ver [`../backend/README.md`](../backend/README.md)). `schema.sql` es su descripción en SQL: tiene la misma estructura (se verificó cargándolo en una base vacía y comparando columnas, tipos, restricciones e índices con la base que crea `migrate`) y sirve para leerla de una vez o, si hiciera falta, crearla a mano en una base vacía. **En el uso normal no se ejecuta.**
+
+El script ya no es el diseño original: se actualizó con lo realmente construido. Las diferencias (contraseña con formato de Django, fechas con zona horaria, restricciones nuevas, una sola caja abierta por sede, etc.) están en el encabezado del propio archivo y explicadas en la sección 1.7 de [`../docs/02-Diseno-BD-Modulos.md`](../docs/02-Diseno-BD-Modulos.md).
+
+`migrate` agrega además tablas internas de Django y de la autenticación por token (`authtoken_token`, `auth_*`, `django_*`, `usuario_groups`…); no tienen datos del negocio y no figuran en `schema.sql`. Los datos de ejemplo se cargan **después** de crear las tablas.
 
 ## Datos de ejemplo
 
