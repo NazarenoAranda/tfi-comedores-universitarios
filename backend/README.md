@@ -15,7 +15,8 @@ Estructura prevista: una app de Django por módulo (`usuarios`, `sedes`, `provee
 | `caja` — apertura y cierre de caja con totales | Listo |
 | `ventas` — comprobantes de venta con ítems y filtros | Listo |
 | `pedidos` — pedidos a proveedores con ítems y estados | Listo |
-| Resto de los módulos | Pendiente |
+| `dashboard` — totales de ventas y pedidos por sede y consolidados | Listo |
+| Pruebas automáticas (54) | Listo |
 
 ## Requisitos
 
@@ -209,6 +210,28 @@ POST /api/pedidos/
 
 Reglas: el pedido necesita al menos un ítem; el monto total lo calcula el sistema (suma de cantidad × precio); el proveedor y la sede tienen que estar activos; el estado, el usuario y las fechas los pone el sistema. **Solo se puede recibir o cancelar un pedido pendiente**: un pedido recibido o cancelado no cambia más (responde `400`). Los cambios de estado bloquean la fila, así que dos personas no pueden pisarse.
 
+### Panel consolidado (solo administración)
+
+| Método y dirección | Qué hace |
+|---|---|
+| `GET /api/dashboard/resumen/` | Totales de ventas y de pedidos, por sede y consolidados. Filtros: `?sede=<id>`, `?desde=AAAA-MM-DD`, `?hasta=AAAA-MM-DD` (inclusivas). Las ventas se filtran por la fecha del comprobante y los pedidos por la fecha del pedido |
+
+```
+GET /api/dashboard/resumen/?desde=2026-10-01&hasta=2026-10-31
+
+200 OK
+{"desde": "2026-10-01", "hasta": "2026-10-31",
+ "consolidado": {
+   "ventas":  {"cantidad": 6, "total": "1660.15",
+               "por_medio_pago": {"efectivo": {"cantidad": 3, "total": "310.10"}, "tarjeta": {...}, "transferencia": {...}, "qr": {...}}},
+   "pedidos": {"cantidad": 3, "total": "600.00",
+               "por_estado": {"pendiente": {"cantidad": 1, "total": "70.00"}, "recibido": {...}, "cancelado": {...}}},
+   "resultado": "1060.15"},
+ "por_sede": [{"sede": 1, "sede_nombre": "Comedor Central", "ventas": {...}, "pedidos": {...}, "resultado": "1250.15"}, ...]}
+```
+
+Cómo se calcula: `ventas.total` suma todos los comprobantes; `pedidos.total` suma los pedidos **pendientes y recibidos** (los cancelados se informan aparte, en `por_estado`, pero no cuentan); `resultado` = ventas − pedidos. El consolidado es la suma de todas las sedes. Aparecen todas las sedes activas (con ceros si no tuvieron movimientos) y las dadas de baja que tengan movimientos en el período. Los importes viajan como texto.
+
 ### Estado del sistema
 
 | Método y dirección | Qué hace |
@@ -227,8 +250,33 @@ Los listados están paginados de a 20 elementos (`count`, `next`, `previous`, `r
 | Caja | Todo | Solo su sede | — |
 | Comprobantes (ventas) | Todo | Solo su sede | — |
 | Pedidos | Todo | — | Todo |
+| Panel consolidado | Todo | — | — |
 
-Los permisos del módulo siguiente (dashboard) se suman a esta tabla a medida que se desarrollan. Las reglas están en `usuarios/permissions.py`.
+Las reglas están en `usuarios/permissions.py`.
+
+## Despliegue
+
+El backend está preparado para desplegarse en **Render** conectado a la base de **Supabase**: `build.sh` instala las dependencias, junta los archivos estáticos y aplica las migraciones; el servidor es `gunicorn config.wsgi:application`. Los pasos, las variables de entorno y los problemas frecuentes están en [`../docs/04-Despliegue.md`](../docs/04-Despliegue.md), sección 2.
+
+## Pruebas automáticas
+
+El backend tiene **54 pruebas automáticas** que ejercitan la API como lo hace el frontend (login, token, permisos por rol) y comprueban las reglas del negocio y las restricciones de la base de datos:
+
+| App | Pruebas | Qué cubren |
+|---|---|---|
+| `usuarios` | 11 | Login (email sin distinguir mayúsculas, mensaje único ante error), token, `me` y logout; alta, modificación y baja de usuarios; cierre de sesiones al cambiar la contraseña; panel de administración |
+| `caja` | 10 | Apertura (una sola caja abierta por sede), validaciones, aislamiento por sede, totales por medio de pago, cierre y efectivo esperado, filtros y restricciones de la base |
+| `ventas` | 17 | Comprobantes con y sin ítems, total calculado, solo con caja abierta, permisos, filtros por sede, medio de pago y fechas, y que los totales de la caja usen los comprobantes |
+| `pedidos` | 10 | Alta con ítems, estados (recibir / cancelar solo si está pendiente), permisos y filtros |
+| `dashboard` | 6 | Totales por sede y consolidados (con números verificados a mano), filtros y permisos |
+
+Se ejecutan desde la carpeta `backend/`, con el entorno virtual activado:
+
+```
+python manage.py test
+```
+
+(Por apps: `python manage.py test caja ventas`. Con más detalle: `python manage.py test -v 2`.) Corren sobre una base de datos temporal que Django crea y borra sola: **no tocan los datos de la base configurada**. Si `DATABASE_URL` apunta a PostgreSQL (Supabase), el usuario necesita permiso para crear bases; para no complicarse, conviene correrlas con `DATABASE_URL` vacío (SQLite) o contra un PostgreSQL local. Al terminar tiene que decir `OK`. Las pruebas usan un cifrador de contraseñas rápido solo mientras corren (`config/pruebas.py`).
 
 ## Primer uso: crear usuarios
 
