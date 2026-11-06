@@ -191,7 +191,7 @@ curl -X POST https://<nombre-del-servicio>.onrender.com/api/auth/login/ \
 
 Debe devolver un token. Con él se puede consultar, por ejemplo, `GET /api/dashboard/resumen/` con el header `Authorization: Token <token>`.
 
-**URL del backend desplegado:** `COMPLETAR-CON-LA-URL-REAL` (se pega acá apenas el servicio esté en estado Live).
+**URL del backend desplegado:** https://tfi-comedores-api.onrender.com (control de estado: https://tfi-comedores-api.onrender.com/api/health/ · panel de administración: https://tfi-comedores-api.onrender.com/admin/).
 
 ### 2.5 Actualizar el backend
 
@@ -247,7 +247,7 @@ Requisito: el backend ya desplegado en Render (sección 2) y su URL a mano.
 
 La versión de Node que usa Vercel (por defecto, la última LTS) es compatible con el proyecto (`engines` en `frontend/package.json`); no hace falta cambiarla.
 
-**URL del frontend desplegado:** `COMPLETAR-CON-LA-URL-REAL` (se pega acá apenas el sitio esté publicado).
+**URL del frontend desplegado:** https://tfi-comedores-universitarios.vercel.app
 
 ### 3.3 Autorizar el frontend en el backend (CORS)
 
@@ -295,4 +295,4 @@ Con los tres componentes desplegados, se recorre el flujo principal del sistema 
 | 6 | Administración (`admin@comedores.test`) | **Panel** | Los totales de ventas y de pedidos incluyen lo cargado en los pasos 3 y 5, por sede y consolidados |
 | 7 | Cajero | Intentar entrar a **Panel** o **Proveedores** (por la dirección) | "Sin acceso": cada rol ve solo lo suyo |
 
-Esta misma secuencia se verificó de forma automática con un navegador real contra una versión de producción (frontend compilado + backend con `gunicorn` y `DEBUG=False`) antes del despliegue. Falta repetirla sobre las direcciones reales y anotar acá la fecha en que se hizo: `COMPLETAR (fecha de la prueba en línea)`.
+Esta misma secuencia se verificó de forma automática con un navegador real contra una versión de producción (frontend compilado + backend con `gunicorn` y `DEBUG=False`) antes del despliegue. Se repitió el 6/11/2026 sobre las direcciones reales (frontend en Vercel, backend en Render, base en Supabase) y el recorrido completo funcionó sin problemas.

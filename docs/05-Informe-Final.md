@@ -7,8 +7,8 @@
 | | |
 |---|---|
 | **Repositorio** | https://github.com/NazarenoAranda/tfi-comedores-universitarios |
-| **Aplicación en línea (frontend)** | `COMPLETAR-URL-DE-VERCEL` |
-| **API en línea (backend)** | `COMPLETAR-URL-DE-RENDER`/api/health/ |
+| **Aplicación en línea (frontend)** | https://tfi-comedores-universitarios.vercel.app |
+| **API en línea (backend)** | https://tfi-comedores-api.onrender.com/api/health/ |
 | **Video de presentación** | `COMPLETAR-LINK-DEL-VIDEO` |
 
 > **Índice.** Primera parte: 1. Problema · 2. Solución · 3. Arquitectura · 4. Módulos · 5. Tecnologías · 6. Despliegue.
@@ -192,7 +192,7 @@ La guía paso a paso (con todas las variables y la lista de verificación) está
 - **Las pruebas detectan errores de verdad:** se rompieron a propósito dos reglas (permitir ventas con la caja cerrada e ignorar el monto de apertura en el cierre) y las pruebas correspondientes fallaron, como corresponde.
 - **Recorrido completo en un navegador real:** se automatizó, con un navegador, el flujo de punta a punta (ingreso, apertura de caja, venta, cierre, pedido y panel) contra una versión de producción local (frontend compilado y backend con `gunicorn` y `DEBUG=False`), incluyendo la vista en pantalla de celular y el comportamiento de cada rol.
 - **Base de datos:** el script `schema.sql` se verificó contra la base que crean las migraciones y son idénticos; los datos de ejemplo cargan sin errores.
-- **Prueba en el sistema publicado:** se repitió el recorrido sobre las direcciones reales el `COMPLETAR (fecha)`, con resultado `COMPLETAR (sin problemas / problemas encontrados)`.
+- **Prueba en el sistema publicado:** se repitió el recorrido completo sobre las direcciones reales el 6/11/2026, con resultado: sin problemas.
 
 ### 7.3 El sistema en funcionamiento
 

@@ -5,7 +5,7 @@
 
 Este manual explica cómo usar la aplicación web, paso a paso y según el rol de cada persona. No hace falta saber de informática.
 
-- **Dirección de la aplicación:** `COMPLETAR-CON-LA-URL-DEL-FRONTEND` (la de Vercel, ver [`04-Despliegue.md`](./04-Despliegue.md))
+- **Dirección de la aplicación:** https://tfi-comedores-universitarios.vercel.app (la de Vercel, ver [`04-Despliegue.md`](./04-Despliegue.md))
 - **Cómo se usa:** desde cualquier navegador (computadora, tablet o celular), con conexión a Internet.
 
 > **Aviso sobre la primera carga:** la aplicación usa servicios gratuitos que se "duermen" si pasa un rato sin uso. La primera vez del día, el ingreso puede tardar hasta un minuto. Es normal: la pantalla lo avisa. Hay que esperar sin cerrar la página.
@@ -180,7 +180,7 @@ En **Panel** se ve de un vistazo cómo viene el negocio:
 
 ## 8. Para quien administra el sistema
 
-- **Usuarios, sedes y datos en general:** el panel de administración del sistema está en `<dirección del backend>/admin/` (la dirección del backend figura en [`04-Despliegue.md`](./04-Despliegue.md)). Se ingresa con el usuario administrador. Ahí se crean los usuarios y se les asigna el rol (administración, cajero o compras) y, a los cajeros, la sede.
+- **Usuarios, sedes y datos en general:** el panel de administración del sistema está en `https://tfi-comedores-api.onrender.com/admin/` (la dirección del backend figura en [`04-Despliegue.md`](./04-Despliegue.md)). Se ingresa con el usuario administrador. Ahí se crean los usuarios y se les asigna el rol (administración, cajero o compras) y, a los cajeros, la sede.
 - **Un cajero siempre necesita una sede asignada.** Sin ella no puede abrir la caja ni cargar ventas.
 - **Datos de ejemplo:** para una demostración se pueden cargar con `database/datos_ejemplo.sql` (ver [`../database/README.md`](../database/README.md)). Usuarios de ejemplo, todos con la contraseña `Demo-1234`:
 
