@@ -2,7 +2,7 @@
 
 API REST del sistema, desarrollada con **Python + Django + Django REST Framework**, con autenticación por token (`Authorization: Token <token>`).
 
-Estructura prevista: una app de Django por módulo (`usuarios`, `sedes`, `proveedores`, `caja`, `ventas`, `pedidos`, `dashboard`). Detalle en [`../docs/03-Arquitectura.md`](../docs/03-Arquitectura.md).
+Estructura: una app de Django por módulo (`usuarios`, `sedes`, `proveedores`, `caja`, `ventas`, `pedidos`, `dashboard`). Detalle en [`../docs/03-Arquitectura.md`](../docs/03-Arquitectura.md).
 
 ## Estado
 
