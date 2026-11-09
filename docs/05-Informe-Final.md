@@ -9,7 +9,7 @@
 | **Repositorio** | https://github.com/NazarenoAranda/tfi-comedores-universitarios |
 | **Aplicación en línea (frontend)** | https://tfi-comedores-universitarios.vercel.app |
 | **API en línea (backend)** | https://tfi-comedores-api.onrender.com/api/health/ |
-| **Video de presentación** | `COMPLETAR-LINK-DEL-VIDEO` |
+| **Video de presentación** | https://youtu.be/QZVu9Qq_rWA |
 
 > **Índice.** Primera parte: 1. Problema · 2. Solución · 3. Arquitectura · 4. Módulos · 5. Tecnologías · 6. Despliegue.
 > Segunda parte: 7. Resultados · 8. Dificultades · 9. Aprendizajes · 10. Trabajo futuro · 11. Conclusión.

@@ -5,160 +5,177 @@
 **Integrantes:** Nazareno Aranda, Julian Blanco Cortes
 **Tipo de proyecto:** Inventiva propia (caso simulado)
 
-Sistema web para una cadena de comedores universitarios que centraliza el registro de comprobantes de venta, el cierre de caja de cada sede y el seguimiento de los pedidos a proveedores, reemplazando el manejo actual en planillas de Excel y papel.
+Sistema web para una cadena de comedores universitarios que centraliza el registro de ventas, el cierre de caja de cada sede y el seguimiento de los pedidos a proveedores, y le da a la administración una vista consolidada de todas las sedes. Reemplaza el manejo actual con planillas de Excel y papel.
 
----
+## Links
 
-## 1. Problemática
+| | |
+|---|---|
+| **Aplicación en línea** | https://tfi-comedores-universitarios.vercel.app |
+| **API (backend)** | https://tfi-comedores-api.onrender.com · [estado del servicio](https://tfi-comedores-api.onrender.com/api/health/) |
+| **Video de presentación** | https://youtu.be/QZVu9Qq_rWA |
+| **Informe final** | [`docs/05-Informe-Final.md`](docs/05-Informe-Final.md) |
 
-### Contexto
-Se plantea el caso de una **cadena de comedores universitarios**: una administración central que gestiona varios comedores (sedes) dentro del ámbito de una o más universidades. Cada sede tiene un encargado de caja que registra las ventas del día, y existe además un encargado de compras responsable de gestionar los pedidos a los distintos proveedores (insumos, alimentos, bebidas, etc.) que abastecen a las sedes.
+> **Importante al probar la aplicación en línea:** el backend está en un plan gratuito que se "duerme" tras un rato sin uso. La **primera carga puede tardar hasta un minuto**; después funciona con normalidad.
 
-### Actores y necesidades
+### Usuarios de ejemplo (solo para pruebas)
 
-| Actor | Rol | Necesidad principal |
+La contraseña de todos es `Demo-1234`.
+
+| Rol | Email | Qué puede hacer |
 |---|---|---|
-| Dueño / Administración | Supervisa todas las sedes | Visibilidad consolidada de ventas y gastos, sin depender de reportes manuales de cada sede |
-| Encargado de caja (por sede) | Registra ventas diarias | Cargar comprobantes rápido y cerrar la caja sin perder tiempo en cálculos manuales |
-| Encargado de compras | Gestiona pedidos a proveedores | Llevar registro claro de qué se pidió, a quién y en qué estado está cada pedido |
+| Administración | `admin@comedores.test` | Todo: sedes, proveedores, cajas, ventas, pedidos y panel consolidado |
+| Cajero | `cajero.ciencias@comedores.test` | Abrir y cerrar la caja de su sede y registrar ventas |
+| Compras | `compras@comedores.test` | Proveedores y pedidos |
 
-### Situación actual
-Hoy el registro se lleva de forma manual e informal: **planillas de Excel no centralizadas y anotaciones en papel**, sin un criterio único entre sedes. Cada comedor maneja su información de manera aislada.
+Hay además cajeros en las otras sedes (`cajero.central@comedores.test` y `cajero.norte@comedores.test`). Un recorrido sugerido: ingresar como cajero → abrir caja → cargar una venta → cerrar caja → ingresar como compras → registrar un pedido → ingresar como administración → ver el panel. El [manual de uso](docs/06-Manual-de-Uso.md) lo explica con capturas.
 
-### Impacto medible
-El costo principal identificado es el **tiempo que se pierde armando el cierre de caja**, agravado por tratarse de una cadena con múltiples sedes: no hay forma rápida de consolidar la información de todas ellas para tener una foto general del negocio.
+## Qué hace el sistema
 
-### Por qué una solución tecnológica
-Una planilla de Excel, aunque esté bien diseñada, depende de la disciplina manual de cada encargado de caja en cada sede y no ofrece una vista centralizada en tiempo real. Un sistema con una interfaz intuitiva reduce la fricción del registro diario y permite consolidar automáticamente la información de todas las sedes, algo que el enfoque actual no resuelve.
+| Módulo | Qué hace |
+|---|---|
+| **Usuarios y autenticación** | Ingreso con email y contraseña, token de sesión y tres roles: administración, cajero y compras |
+| **Sedes** | Alta, modificación y baja de los comedores |
+| **Proveedores** | Alta, modificación y baja de proveedores |
+| **Caja** | Apertura y cierre de caja por sede, con totales por medio de pago y efectivo esperado |
+| **Ventas** | Comprobantes con o sin detalle de productos, siempre dentro de una caja abierta; filtros por sede, fecha y medio de pago |
+| **Pedidos** | Pedidos a proveedores con productos y estados (pendiente, recibido, cancelado) |
+| **Panel consolidado** | Totales de ventas y pedidos de todas las sedes y por sede, con filtros de fechas |
 
-### Enunciado del problema
-> *"El personal de una cadena de comedores universitarios —encargados de caja en cada sede, encargado de compras y la administración central— actualmente registra las ventas diarias y los pedidos a proveedores mediante Excel y anotaciones en papel, sin un criterio centralizado entre sedes. Esto genera una pérdida significativa de tiempo al armar el cierre de caja, especialmente al no poder consolidar rápidamente la información de las distintas sedes. Un sistema de gestión centralizaría el registro de comprobantes de venta y el seguimiento de pedidos a proveedores en una interfaz intuitiva, reduciendo el tiempo de cierre de caja y dando visibilidad consolidada a la administración."*
+Reglas que garantiza el sistema: una sola caja abierta por sede, no se vende con la caja cerrada, cada cajero solo ve su sede, nada se borra (las bajas son lógicas) y los importes no pierden precisión.
 
-### Validación del problema
-- **¿Ocurre ahora o es hipotético?** Es un caso simulado, pero modela una situación real y común en comercios con múltiples puntos de venta.
-- **¿Los afectados reconocen el problema?** Sí — la pérdida de tiempo en el cierre de caja es un problema típico y reconocible en este tipo de operación.
-- **¿Existe solución parcial hoy?** Sí, Excel y papel — insuficiente porque no centraliza información entre sedes ni agiliza el cierre.
-- **¿Es técnicamente factible en los plazos?** Sí, ver sección de viabilidad.
-- **¿Hay algo similar en el mercado?** Existen sistemas de punto de venta (POS) genéricos, pero no orientados específicamente a la gestión multi-sede de comedores con seguimiento de proveedores integrado en un mismo flujo.
-
----
-
-## 2. Alcance del proyecto (MVP)
-
-### Incluido en el MVP
-- Registro de comprobantes de venta por sede (fecha, monto, medio de pago)
-- Listado y consulta de comprobantes, con filtros por sede y fecha
-- Cierre de caja por sede (cálculo automático de totales del período)
-- Alta y listado de proveedores
-- Alta y seguimiento de pedidos a proveedores (estado: pendiente / recibido)
-- Panel consolidado para la administración: totales de todas las sedes
-
-### Nice to have (si el tiempo lo permite)
-- Reportes comparativos entre sedes
-- Alertas de pedidos a proveedores con demora
-- Exportación del cierre de caja a PDF/Excel
-- Permisos diferenciados por rol (administración / cajero / compras)
-
-### Fuera de alcance (explícito)
-- Facturación electrónica / integración con AFIP
-- Control de stock detallado a nivel de ingredientes/insumos
-- Aplicación móvil nativa
-
----
-
-## 3. Stack tecnológico
+## Tecnologías
 
 | Capa | Tecnología |
 |---|---|
-| Backend | Python + Django + Django REST Framework |
-| Autenticación | Token Authentication de Django REST Framework |
-| Base de datos | PostgreSQL |
-| Frontend | React + Vite |
-| Despliegue | Backend en Render, base de datos PostgreSQL en Supabase, frontend en Vercel |
-| Control de versiones | GitHub (repositorio único) |
+| Backend | Python 3.13 · Django 5.2 · Django REST Framework 3.16 |
+| Autenticación | Token Authentication de DRF |
+| Base de datos | PostgreSQL (Supabase) |
+| Frontend | React 18 · Vite 7 · react-router-dom 7 |
+| Despliegue | Backend en Render · base de datos en Supabase · frontend en Vercel |
+| Pruebas | 54 pruebas automáticas del backend |
+| Control de versiones | Git + GitHub (repositorio único) |
 
-### Justificación
+Arquitectura: **monolito modular en capas** (7 apps de Django, una por módulo) con una API REST que consume una aplicación React. Los detalles y la justificación de cada decisión están en [`docs/03-Arquitectura.md`](docs/03-Arquitectura.md).
 
-**Backend — Python + Django + DRF:**
-Se eligió Python porque es un lenguaje que el equipo ya conoce de la cursada (Programación IV, POO en Python) y con el que se siente cómodo. Dentro del ecosistema Python, Django aporta un ORM maduro, sistema de autenticación y un panel de administración incorporado (Django Admin), lo que permite tener una base funcional para gestionar proveedores, pedidos y comprobantes desde el día uno, sin necesidad de construir primero toda la interfaz. Esto reduce el esfuerzo de desarrollo, algo clave dado el plazo académico. Django REST Framework se usa para exponer la API que consume el frontend en React.
-
-**Autenticación — Token Authentication de DRF:**
-Frontend y backend se despliegan en servicios distintos (Vercel y Render), por lo que las sesiones basadas en cookies traerían complicaciones entre dominios. El token viaja en el header `Authorization`, viene incluido en DRF sin librerías adicionales y evita la complejidad extra de JWT (refresh tokens, expiración), que no aporta valor real para el alcance de este proyecto.
-
-**Base de datos — PostgreSQL:**
-El dominio del problema (ventas, comprobantes, sedes, proveedores, pedidos) tiene una estructura de datos bien definida y con relaciones claras entre entidades (una venta pertenece a una sede, un pedido pertenece a un proveedor, etc.), por lo que un modelo relacional con integridad referencial es el más adecuado frente a una base NoSQL. Se aloja en Supabase porque las bases PostgreSQL gratuitas de Render expiran a los 30 días de creadas, un plazo menor al de este proyecto.
-
-**Frontend — React + Vite:**
-JavaScript es el lenguaje nativo de los navegadores, y React permite construir una interfaz de carga rápida e intuitiva para los encargados de caja, que es justamente uno de los objetivos centrales del proyecto (reducir la fricción frente al Excel actual).
-
-**Despliegue — Render / Supabase / Vercel:**
-Cumplen el requisito obligatorio de tener al menos un componente alojado en la nube, con planes gratuitos suficientes para el alcance de un MVP académico.
-
-**Experiencia previa del equipo:** el equipo ya conoce Python (Programación IV) y la arquitectura en capas con Java/Spring Boot (Programación III), que se traslada de forma directa a Django. Lo nuevo a incorporar es el framework Django/DRF. Al ser un proyecto académico con condiciones flexibles y con el aprendizaje como parte del objetivo, esa curva de aprendizaje es asumible dentro de los plazos.
-
----
-
-## 4. Plan de trabajo
-
-| Etapa | Entregable | Fecha límite |
-|---|---|---|
-| 1 | Problemática definida, alcance, stack justificado, repo GitHub creado | 30/08 |
-| 2 | Esquema de base de datos, listado de módulos, arquitectura y estructura del repositorio | 27/09 |
-| 3 | Desarrollo completo, despliegue, informe, video | 14/11 |
-
-### Módulos identificados
-Detalle, descripción y prioridad de cada uno en [`02-Diseno-BD-Modulos.md`](docs/02-Diseno-BD-Modulos.md).
-
-### Riesgos iniciales y mitigación
-| Riesgo | Mitigación |
-|---|---|
-| Equipo sin experiencia previa en Django | Dedicar la primera semana de desarrollo a un mini-tutorial guiado antes de tocar el modelo de datos definitivo |
-| Alcance multi-sede puede crecer de más | Mantener fija la lista de "fuera de alcance" y revisarla en cada entrega |
-| Plazos ajustados para las entregas intermedias | Priorizar siempre el MVP sobre el "nice to have" |
-| Los servicios gratuitos en la nube se "duermen" tras un rato sin uso (el primer pedido puede tardar hasta un minuto) | Aceptarlo para el MVP y avisarlo en la demo; revisar las condiciones de los planes gratuitos antes de desplegar |
-
----
-
-## 5. Viabilidad
-
-- **Técnica:** el equipo puede implementar la solución con el stack elegido; la única curva de aprendizaje real es Django, que tiene documentación extensa y comunidad grande.
-- **Operativa:** al ser un caso simulado, no hay usuarios reales que adoptar, pero el diseño contempla un flujo de uso realista (cajero carga venta → cierre de caja → compras gestiona pedido → administración consolida).
-- **Temporal:** el alcance del MVP es compatible con las fechas de entrega fijadas por la cátedra.
-
----
-
-## 6. Estructura del repositorio
+## Estructura del repositorio
 
 ```
-/backend      Aplicación Django + DRF (una app por módulo)
+/backend      API Django + DRF (una app por módulo)
 /frontend     Aplicación React + Vite
-/database     Scripts DDL/DML y esquemas
-/docs         Propuesta, diseño de BD, módulos y arquitectura
+/database     schema.sql (estructura real), datos de ejemplo y script de limpieza
+/docs         Documentación del proyecto
 README.md     Este archivo
 ```
 
-El código se desarrolla dentro de `/backend` y `/frontend` durante la Etapa 3 (ver el estado en la sección 8).
-
-## 7. Documentación
+## Documentación
 
 | Documento | Contenido |
 |---|---|
-| [`docs/01-Propuesta.md`](docs/01-Propuesta.md) | Propuesta completa del proyecto (problemática, alcance, stack, plan de trabajo) |
-| [`docs/02-Diseno-BD-Modulos.md`](docs/02-Diseno-BD-Modulos.md) | Diagrama entidad-relación, diccionario de datos, índices y listado de módulos con su prioridad |
-| [`docs/03-Arquitectura.md`](docs/03-Arquitectura.md) | Arquitectura elegida, tecnologías definitivas y justificación de las decisiones técnicas |
-| [`database/schema.sql`](database/schema.sql) | Script DDL de la base de datos (PostgreSQL) |
+| [`docs/01-Propuesta.md`](docs/01-Propuesta.md) | Propuesta del proyecto: problemática, alcance, stack y plan de trabajo |
+| [`docs/02-Diseno-BD-Modulos.md`](docs/02-Diseno-BD-Modulos.md) | Diseño de la base de datos, módulos y diferencias con el diseño original |
+| [`docs/03-Arquitectura.md`](docs/03-Arquitectura.md) | Arquitectura, capas, tecnologías y justificación |
+| [`docs/04-Despliegue.md`](docs/04-Despliegue.md) | Guía de despliegue en Supabase, Render y Vercel |
+| [`docs/05-Informe-Final.md`](docs/05-Informe-Final.md) | Informe final: problema, solución, resultados, dificultades y aprendizajes |
+| [`docs/06-Manual-de-Uso.md`](docs/06-Manual-de-Uso.md) | Manual de uso con capturas de pantalla |
+| [`docs/07-Guion-Video.md`](docs/07-Guion-Video.md) | Guion del video de presentación |
+| [`database/README.md`](database/README.md) | Base de datos y datos de ejemplo |
+| [`backend/README.md`](backend/README.md) | API: instalación, endpoints y pruebas |
+| [`frontend/README.md`](frontend/README.md) | Frontend: instalación y pantallas |
 
-## 8. Estado del proyecto
+## Instalación y ejecución en local
+
+**Requisitos:** Git, Python 3.10 o superior (se probó con 3.13) y Node.js 20.19 o superior (o 22.12 o superior) con npm. PostgreSQL es opcional: si no se configura, el backend usa SQLite.
+
+### 1. Clonar el repositorio
+
+```
+git clone https://github.com/NazarenoAranda/tfi-comedores-universitarios.git
+cd tfi-comedores-universitarios
+```
+
+### 2. Variables de entorno
+
+Copiar `.env.example` como `.env` **en la raíz del repositorio** (el `.env` nunca se sube a GitHub):
+
+```
+# Windows
+copy .env.example .env
+# macOS / Linux
+cp .env.example .env
+```
+
+Con los valores por defecto el backend funciona en local con SQLite. Para usar PostgreSQL (por ejemplo, Supabase), completar `DATABASE_URL` (ver [`docs/04-Despliegue.md`](docs/04-Despliegue.md)).
+
+### 3. Backend
+
+Desde la carpeta `backend/`:
+
+**Windows**
+
+```
+cd backend
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py runserver
+```
+
+**macOS / Linux**
+
+```
+cd backend
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py runserver
+```
+
+El backend queda en http://localhost:8000. Para comprobarlo: http://localhost:8000/api/health/ debe responder `{"status":"ok","database":"ok"}`. El panel de administración (para crear sedes, usuarios, etc.) está en http://localhost:8000/admin/ y se ingresa con el superusuario recién creado. Si PowerShell no deja ejecutar `activate`, usar CMD o correr antes `Set-ExecutionPolicy -Scope Process Bypass`.
+
+### 4. Frontend
+
+En **otra terminal**, desde la carpeta `frontend/`:
+
+```
+cd frontend
+npm install
+npm run dev
+```
+
+La aplicación queda en http://localhost:5173 y usa el backend de http://localhost:8000 (variable `VITE_API_URL` del `.env`).
+
+### 5. Datos de ejemplo (opcional)
+
+El script `database/datos_ejemplo.sql` carga sedes, usuarios, proveedores, ventas y pedidos de ejemplo, pensado para **PostgreSQL**. Las instrucciones están en [`database/README.md`](database/README.md). Con SQLite, las sedes y los usuarios se crean desde `/admin/`.
+
+### 6. Pruebas automáticas
+
+Desde `backend/`, con el entorno virtual activado y `DATABASE_URL` vacío:
+
+```
+python manage.py test
+```
+
+Tiene que terminar con `Ran 54 tests` y `OK`. No tocan los datos reales.
+
+## Despliegue
+
+El sistema está publicado en tres servicios gratuitos: la base de datos en **Supabase**, el backend en **Render** y el frontend en **Vercel**; se actualizan solos con cada cambio en la rama `main`. El paso a paso está en [`docs/04-Despliegue.md`](docs/04-Despliegue.md).
+
+## Estado del proyecto
 
 | Etapa | Estado |
 |---|---|
 | 1. Propuesta y repositorio | Entregada |
-| 2. Diseño de base de datos, módulos y arquitectura | Documentación subida, pendiente de aprobación del tutor |
-| 3. Desarrollo, despliegue, informe y video | **En curso** (fecha límite 14/11) |
+| 2. Diseño de base de datos, módulos y arquitectura | Entregada |
+| 3. Desarrollo, despliegue, informe y video | **Completa** (7 módulos implementados, probados y publicados) |
 
-## 9. Instalación y ejecución
-
-En construcción. Mientras tanto, el backend y el frontend tienen sus propias instrucciones en `backend/README.md` y `frontend/README.md`. Esta sección se completará con los pasos completos en la entrega final.
+**Funcionalidades opcionales:** permisos por rol (hecho) y reportes comparativos entre sedes (parcial, en el panel). Quedaron como trabajo futuro: exportación del cierre de caja a PDF/Excel y alertas de pedidos demorados (ver el [informe final](docs/05-Informe-Final.md)).
 
 ## Integrantes
 
